@@ -235,7 +235,7 @@ VALUES
    SERVICO_PRODUTO
 ========================= */
 INSERT INTO SERVICO_INSUMO (
-FK_Insumo_id_produto,
+FK_Insumo_id_insumo,
 FK_Servico_id_servico,
 quantidade_produto
 )
