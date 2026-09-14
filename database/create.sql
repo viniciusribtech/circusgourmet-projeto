@@ -98,7 +98,7 @@ CREATE TABLE SERVICO_INSUMO (
     FK_Insumo_id_insumo INTEGER,
     FK_Servico_id_servico INTEGER ,
     quantidade_insumo SMALLINT UNSIGNED NOT NULL,
-    PRIMARY KEY (FK_Servico_id_servico, FK_Produto_id_produto)
+    PRIMARY KEY (FK_Servico_id_servico, FK_Insumo_id_insumo)
 );
 
 CREATE TABLE EVENTO_TERCEIRIZADO (
