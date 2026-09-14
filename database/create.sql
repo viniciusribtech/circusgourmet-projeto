@@ -54,7 +54,7 @@ CREATE TABLE Categoria (
 );
 
 CREATE TABLE Insumo (
-    id_produto INTEGER AUTO_INCREMENT PRIMARY KEY,
+    id_insumo INTEGER AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(30) NOT NULL,
     custo_unitario DECIMAL(4,2) UNSIGNED NOT NULL
 );
