@@ -90,7 +90,7 @@ VALUES
 (28.00, 100, 51, 5);
 
 /* =========================
-   PRODUTO
+   INSUMO
 ========================= */
 INSERT INTO Insumo (nome, custo_unitario)
 VALUES
@@ -232,7 +232,7 @@ VALUES
 (10, 8, 1, 10.00);
 
 /* =========================
-   SERVICO_PRODUTO
+   SERVICO_INSUMO
 ========================= */
 INSERT INTO SERVICO_INSUMO (
 FK_Insumo_id_insumo,
