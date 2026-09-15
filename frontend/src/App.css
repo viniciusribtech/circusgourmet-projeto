@@ -30,3 +30,57 @@
 .nav-links button:hover {
     color: #610000;
 }
+
+.calendar {
+    width: 65%;
+    margin: 40px 0 40px 30px;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+.calendar-header h2 {
+    margin: 0;
+    font-size: 20px;
+    color: #610000;
+    text-transform: capitalize;
+}
+
+.calendar-header button {
+    border: none;
+    background: none;
+    color: #610000;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.week-days,
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.week-days span {
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 12px;
+    background-color: #f3f3f3;
+}
+
+.calendar-days span {
+    min-height: 80px;
+    padding: 10px;
+    border-top: 1px solid #eee;
+    border-right: 1px solid #eee;
+    font-size: 13px;
+}
