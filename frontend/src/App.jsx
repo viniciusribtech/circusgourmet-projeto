@@ -1,13 +1,9 @@
-import Navbar from './components/navbar.jsx';
-import Calendar from './components/calendar.jsx';
+import Home from './pages/home.jsx';
 import './App.css';
-  
+
 function App() {
     return (
-        <>
-            <Navbar />
-            <Calendar />
-        </>
+        <Home />
     );
 }
 
