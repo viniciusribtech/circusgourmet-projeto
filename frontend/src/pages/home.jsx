@@ -1,5 +1,5 @@
-import Navbar from '../components/navbar.jsx';
-import Calendar from '../components/calendar.jsx';
+import Navbar from '../components/BarraNav/navbar.jsx';
+import Calendar from '../components/Calendario/calendar.jsx';
 
 function Home() {
     return (
