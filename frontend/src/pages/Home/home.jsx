@@ -3,6 +3,7 @@ import Calendar from "../../components/Calendario/calendar.jsx";
 import CabecalhoPagina from "../../components/CabecalhoPagina/cabecalhoPagina.jsx";
 import Botao from "../../components/Botao/botao.jsx";
 import OcupacaoCarrinhos from "../../components/OcupacaoCarrinhos/ocupacaoCarrinhos.jsx";
+import ProximoEvento from "../../components/ProximoEvento/proximoEvento.jsx";
 
 import "./home.css";
 
@@ -27,6 +28,7 @@ function Home() {
           </div>
           <div className="coluna-lateral">
             <OcupacaoCarrinhos carrinhos={[]} />
+            <ProximoEvento eventos ={[]} />
           </div>
         </div>
       </div>

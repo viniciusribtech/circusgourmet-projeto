@@ -1,5 +1,5 @@
 .navbar {
-    height: 80px;
+    height: 90px;
     display: flex;
     align-items: center;
     padding: 0 30px;
@@ -10,14 +10,14 @@
 .logo {
     margin: 0;
     width: 250px;
-    height: 150px;
+    height: 180px;
     display: flex;
     align-items: center;
 }
 
 .logo img {
     width: 250px;
-    height: 150px;
+    height: 180px;
     object-fit: contain;
     display: block;
 }

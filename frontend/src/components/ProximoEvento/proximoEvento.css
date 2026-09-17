@@ -1,0 +1,40 @@
+.proximo-evento {
+    min-height: 215px;
+    padding: 20px;
+    background-color: white;
+    border: 1px solid #e3beb8;
+    border-radius: 12px;
+    box-sizing: border-box;
+}
+
+.proximo-evento h3 {
+    margin: 0 0 20px 0;
+    font-size: 13px;
+    color: #5a403c;
+}
+
+.proximo-evento p {
+    margin: 0;
+    text-align: center;
+    color: #5a403c;
+    font-size: 14px;
+
+    position: relative;
+    top: 45px;
+}
+
+.evento {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+}
+
+.evento strong {
+    font-size: 13px;
+    color: #5a403c;
+}
+
+.evento span {
+    font-size: 14px;
+    color: #333;
+}

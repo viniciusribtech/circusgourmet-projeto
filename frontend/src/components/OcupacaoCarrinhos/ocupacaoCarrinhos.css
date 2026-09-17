@@ -1,9 +1,11 @@
 .cartao-ocupacao {
+    min-height: 215px;
     background-color: #ffffff;
     border: 1px solid #e3beb8;
     border-radius: 12px;
-    padding: 16px;
+    padding: 20px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-sizing: border-box;
 }
 
 .titulo-secao {
@@ -22,6 +24,9 @@
     text-align: center;
     padding: 24px 0;
     margin: 0;
+
+    position: relative;
+    top: 25px;
 }
 
 .lista-ocupacao {
