@@ -18,14 +18,14 @@
 .calendar-header h2 {
     margin: 0;
     font-size: 20px;
-    color: #610000;
+    color: #e23d3b;
     text-transform: capitalize;
 }
 
 .calendar-header button {
     border: none;
     background: none;
-    color: #610000;
+    color: #e23d3b;
     font-size: 20px;
     cursor: pointer;
 }

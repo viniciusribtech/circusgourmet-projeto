@@ -1,9 +1,12 @@
 import './navbar.css';
+import logo from '../../assets/Logomarca_CircusGourmet.png';
 
 function Navbar() {
     return (
         <nav className="navbar">
-            <h1 className="logo">Circus Gourmet</h1>
+            <h1 className="logo">
+                <img src={logo} alt="Logo Circus Gourmet" />
+            </h1>
 
             <div className="nav-links">
 
