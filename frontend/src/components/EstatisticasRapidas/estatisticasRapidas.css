@@ -1,0 +1,40 @@
+.estatisticas-rapidas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.card-estatistica {
+    text-align: center;
+    padding: 12px 8px;
+    border-radius: 12px;
+}
+
+.card-estatistica.primaria {
+    background-color: rgba(97, 0, 0, 0.05);
+    border: 1px solid rgba(97, 0, 0, 0.15);
+}
+
+.card-estatistica.secundaria {
+    background-color: rgba(115, 92, 0, 0.05);
+    border: 1px solid rgba(115, 92, 0, 0.15);
+}
+
+.rotulo {
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: #5a403c;
+    margin: 0;
+}
+
+.valor {
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: 900;
+    margin: 4px 0 0 0;
+}
+
+.card-estatistica.primaria .valor    { color: #610000; }
+.card-estatistica.secundaria .valor  { color: #735c00; }

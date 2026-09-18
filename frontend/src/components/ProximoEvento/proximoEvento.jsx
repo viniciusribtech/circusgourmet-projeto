@@ -8,7 +8,7 @@ function ProximoEvento({ eventos }) {
             <h3>PRÓXIMOS EVENTOS</h3>
 
             {eventos.length === 0 ? (
-                <p>Nenhum evento cadastrado.</p>
+                <p className="mensagem-vazia">Nenhum evento cadastrado.</p>
             ) : (
                 eventos.slice(0, 3).map((evento, index) => (
                     <div className="evento" key={index}>

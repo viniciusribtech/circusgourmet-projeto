@@ -4,8 +4,13 @@ import CabecalhoPagina from "../../components/CabecalhoPagina/cabecalhoPagina.js
 import Botao from "../../components/Botao/botao.jsx";
 import OcupacaoCarrinhos from "../../components/OcupacaoCarrinhos/ocupacaoCarrinhos.jsx";
 import ProximoEvento from "../../components/ProximoEvento/proximoEvento.jsx";
+import EstatisticasRapidas from "../../components/EstatisticasRapidas/estatisticasRapidas.jsx"
 
 import "./home.css";
+
+
+
+
 
 function Home() {
   return (
@@ -24,11 +29,12 @@ function Home() {
 
         <div className="grid-principal">
           <div className="coluna-calendario">
-            <Calendar />
+            <Calendar eventos={[]} />
           </div>
           <div className="coluna-lateral">
             <OcupacaoCarrinhos carrinhos={[]} />
             <ProximoEvento eventos ={[]} />
+            <EstatisticasRapidas orcamentos={[]} ativos={[]} />
           </div>
         </div>
       </div>

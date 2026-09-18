@@ -6,6 +6,8 @@
     padding: 20px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
 .titulo-secao {
@@ -19,14 +21,14 @@
 }
 
 .mensagem-vazia {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
     font-size: 14px;
     color: #5a403c;
     text-align: center;
-    padding: 24px 0;
-    margin: 0;
-
-    position: relative;
-    top: 25px;
 }
 
 .lista-ocupacao {
@@ -58,7 +60,7 @@
     font-weight: 700;
 }
 
-.contador.primaria    { color: #610000; }
+.contador.primaria    { color: #e23d3b; }
 .contador.secundaria  { color: #735c00; }
 .contador.terciaria   { color: #2c2e1d; }
 
@@ -76,6 +78,6 @@
     transition: width 0.3s ease;
 }
 
-.barra-preenchida.primaria    { background-color: #610000; }
+.barra-preenchida.primaria    { background-color: #e23d3b; }
 .barra-preenchida.secundaria  { background-color: #735c00; }
 .barra-preenchida.terciaria   { background-color: #2c2e1d; }

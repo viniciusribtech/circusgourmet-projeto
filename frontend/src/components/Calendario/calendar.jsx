@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import './calendar.css';
 
-function Calendar() {
+function Calendar({eventos= []}) {
     const [dataAtual, setDataAtual] = useState(new Date());
+    const [visualizacao, setVisualizacao] = useState('mes');
 
     const ano = dataAtual.getFullYear();
     const mes = dataAtual.getMonth();
@@ -35,43 +36,75 @@ function Calendar() {
         year: 'numeric'
     });
 
+    function eventosDoDia(dia) {
+        if (!dia) return [];
+
+        return eventos.filter((evento) => {
+            const dataEvento = new Date(evento.data);
+
+            return (
+                dataEvento.getFullYear() === ano &&
+                dataEvento.getMonth() === mes &&
+                dataEvento.getDate() === dia
+            );
+        });
+    }
+
+
     return (
         <div className="calendar">
-
             <div className="calendar-header">
+               <div className="calendar-header-esquerda">
+                    <button onClick={mesAnterior}> &lt; </button>
+                    <h2>{nomeMes}</h2>
+                    <button onClick={proximoMes}> &gt;</button>
+                </div>
+            
 
-                <button onClick={mesAnterior}>
-                    &lt;
-                </button>
-
-                <h2>{nomeMes}</h2>
-
-                <button onClick={proximoMes}>
-                    &gt;
-                </button>
-
+            <div className="segmented-control">
+                    <button
+                        className={visualizacao === 'mes' ? 'ativo' : ''}
+                        onClick={() => setVisualizacao('mes')}
+                    >
+                        Mês
+                    </button>
+                    <button
+                        className={visualizacao === 'semana' ? 'ativo' : ''}
+                        onClick={() => setVisualizacao('semana')}
+                    >
+                        Semana
+                    </button>
+                    <button
+                        className={visualizacao === 'dia' ? 'ativo' : ''}
+                        onClick={() => setVisualizacao('dia')}
+                    >
+                        Dia
+                    </button>
+                </div>
             </div>
+        
 
             <div className="week-days">
-                <span>Dom</span>
-                <span>Seg</span>
-                <span>Ter</span>
-                <span>Qua</span>
-                <span>Qui</span>
-                <span>Sex</span>
-                <span>Sáb</span>
+               {dias.map((dia, index) => {
+                    const eventosDia = eventosDoDia(dia);
+
+                    return (
+                        <div key={index} className="calendar-cell">
+                            <span className="numero-dia">{dia}</span>
+
+                            {eventosDia.map((evento, i) => (
+                                <div
+                                    key={i}
+                                    className={`pill-evento ${evento.categoria || 'corporativo'}`}
+                                    title={evento.titulo}
+                                >
+                                    {evento.titulo}
+                                </div>
+                            ))}
+                        </div>
+                    );
+                })}
             </div>
-
-            <div className="calendar-days">
-
-                {dias.map((dia, index) => (
-                    <span key={index}>
-                        {dia}
-                    </span>
-                ))}
-
-            </div>
-
         </div>
     );
 }
