@@ -8,7 +8,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
-    res.json({ status: "Sucesso", mensagem: "API Circus Gourmet rodando"});
+    res.json({ status: "Sucesso!", mensagem: "API Circus Gourmet rodando"});
 });
 
 const PORT = process.env.PORT || 3000;
