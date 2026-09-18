@@ -10,7 +10,7 @@ app.use(express.json());
 require('./src/database/connection');
 
 // 1. Importa as rotas do dashboard que vocês criaram
-const dashboardRoutes = require('./src/routes/dashboardRouter');
+const dashboardRoutes = require('./src/routes/dashboardRoutes');
 
 // Rota base de teste
 app.get('/', (req, res) => { 
