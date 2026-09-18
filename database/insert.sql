@@ -146,6 +146,7 @@ VALUES
    EVENTO
 ========================= */
 INSERT INTO Evento (
+nome_evento,
 data_evento,
 horario_inicio,
 local,
@@ -156,16 +157,16 @@ fk_Cliente_id_cliente,
 fk_Cidade_id_cidade
 )
 VALUES
-('2026-05-17', '18:00:00', 'Salão Imperial', 'Confirmado', 120, '23:00:00', 1, 1),
-('2026-06-29', '19:00:00', 'Espaço Fest', 'Confirmado', 80, '00:00:00', 2, 1),
-('2026-06-21', '17:00:00', 'Chácara Verde', 'Pendente', 150, '22:00:00', 3, 3),
-('2026-07-07', '18:30:00', 'Buffet Real', 'Confirmado', 90, '23:30:00', 4, 1),
-('2026-04-11', '16:00:00', 'Área Vip', 'Cancelado', 60, '21:00:00', 5, 5),
-('2026-05-01', '20:00:00', 'Casa de Eventos', 'Confirmado', 200, '02:00:00', 6, 6),
-('2026-05-15', '15:00:00', 'Espaço Kids', 'Pendente', 70, '20:00:00', 7, 7),
-('2026-04-17', '19:30:00', 'Salão Ouro', 'Cancelado', 110, '00:30:00', 8, 8),
-('2026-03-20', '18:00:00', 'Fazenda Bela Vista', 'Cancelado', 180, '01:00:00', 9, 9),
-('2026-06-15', '21:00:00', 'Clube Central', 'Confirmado', 250, '05:00:00', 10, 10);
+('Festa de Aniversário do Lucas','2026-05-17', '18:00:00', 'Salão Imperial', 'Confirmado', 120, '23:00:00', 1, 1),
+('Comemoração de Formatura','2026-06-29', '19:00:00', 'Espaço Fest', 'Confirmado', 80, '00:00:00', 2, 1),
+('Aniversário de Laura','2026-06-21', '17:00:00', 'Chácara Verde', 'Pendente', 150, '22:00:00', 3, 3),
+('Casamento DG','2026-07-07', '18:30:00', 'Buffet Real', 'Confirmado', 90, '23:30:00', 4, 1),
+('Coffee-break da LT Design','2026-04-11', '16:00:00', 'Área Vip', 'Cancelado', 60, '21:00:00', 5, 5),
+('Geruza Nails','2026-05-01', '20:00:00', 'Casa de Eventos', 'Confirmado', 200, '02:00:00', 6, 6),
+('Coffee-break Estética Automotiva','2026-05-15', '15:00:00', 'Espaço Kids', 'Pendente', 70, '20:00:00', 7, 7),
+('Bodas de Prata GH','2026-04-17', '19:30:00', 'Salão Ouro', 'Cancelado', 110, '00:30:00', 8, 8),
+('Casamento Miguel','2026-03-20', '18:00:00', 'Fazenda Bela Vista', 'Cancelado', 180, '01:00:00', 9, 9),
+('Chá revelação Maria','2026-06-15', '21:00:00', 'Clube Central', 'Confirmado', 250, '05:00:00', 10, 10);
 
 /* =========================
    ORCAMENTO
