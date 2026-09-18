@@ -59,52 +59,40 @@ function Calendar({eventos= []}) {
                     <h2>{nomeMes}</h2>
                     <button onClick={proximoMes}> &gt;</button>
                 </div>
-            
-
-            <div className="segmented-control">
-                    <button
-                        className={visualizacao === 'mes' ? 'ativo' : ''}
-                        onClick={() => setVisualizacao('mes')}
-                    >
-                        Mês
-                    </button>
-                    <button
-                        className={visualizacao === 'semana' ? 'ativo' : ''}
-                        onClick={() => setVisualizacao('semana')}
-                    >
-                        Semana
-                    </button>
-                    <button
-                        className={visualizacao === 'dia' ? 'ativo' : ''}
-                        onClick={() => setVisualizacao('dia')}
-                    >
-                        Dia
-                    </button>
-                </div>
             </div>
         
 
-            <div className="week-days">
-               {dias.map((dia, index) => {
-                    const eventosDia = eventosDoDia(dia);
+           <div className="week-days">
+    <span>Dom</span>
+    <span>Seg</span>
+    <span>Ter</span>
+    <span>Qua</span>
+    <span>Qui</span>
+    <span>Sex</span>
+    <span>Sáb</span>
+</div>
 
-                    return (
-                        <div key={index} className="calendar-cell">
-                            <span className="numero-dia">{dia}</span>
+<div className="calendar-days">
+    {dias.map((dia, index) => {
+        const eventosDia = eventosDoDia(dia);
 
-                            {eventosDia.map((evento, i) => (
-                                <div
-                                    key={i}
-                                    className={`pill-evento ${evento.categoria || 'corporativo'}`}
-                                    title={evento.titulo}
-                                >
-                                    {evento.titulo}
-                                </div>
-                            ))}
-                        </div>
-                    );
-                })}
+        return (
+            <div key={index} className="calendar-cell">
+                <span className="numero-dia">{dia}</span>
+
+                {eventosDia.map((evento, i) => (
+                    <div
+                        key={i}
+                        className={`pill-evento ${evento.categoria || 'corporativo'}`}
+                        title={evento.titulo}
+                    >
+                        {evento.titulo}
+                    </div>
+                ))}
             </div>
+        );
+    })}
+</div>
         </div>
     );
 }
