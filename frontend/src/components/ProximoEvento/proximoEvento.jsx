@@ -13,7 +13,7 @@ function ProximoEvento({ eventos }) {
                 eventos.slice(0, 3).map((evento, index) => (
                     <div className="evento" key={index}>
                         <strong>{evento.data_evento}</strong>
-                        <span>{evento.horario_inicio} - {evento.local}</span>
+                        <span>{evento.horario_inicio} - {evento.nome_evento}</span>
                     </div>
                 ))
             )}
