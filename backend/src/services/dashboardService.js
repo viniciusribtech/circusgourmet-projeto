@@ -5,14 +5,15 @@ const getDashboardData = async (year, month) => {
     // 1. Eventos do Calendário
     const [calendarEvents] = await pool.query(`
         SELECT 
-            id_evento AS id, 
-            nome AS title, 
-            DATE_FORMAT(data_evento, '%Y-%m-%d') AS date, 
-            status, 
-            n_convidados AS guests, 
-            local AS location
-        FROM Evento
-        WHERE YEAR(data_evento) = ? AND MONTH(data_evento) = ?
+            e.id_evento AS id, 
+            c.nome AS title, 
+            DATE_FORMAT(e.data_evento, '%Y-%m-%d') AS date, 
+            e.status, 
+            e.n_convidados AS guests, 
+            e.local AS location
+        FROM Evento e
+        JOIN Cliente c ON e.fk_Cliente_id_cliente = c.id_cliente
+        WHERE YEAR(e.data_evento) = ? AND MONTH(e.data_evento) = ?
     `, [year, month]);
 
     // 2. Próximos Eventos
@@ -20,11 +21,12 @@ const getDashboardData = async (year, month) => {
         SELECT 
             e.id_evento AS id, 
             DATE_FORMAT(e.data_evento, '%Y-%m-%d') AS date, 
-            e.nome AS title, 
+            c.nome AS title, 
             e.status, 
             e.n_convidados AS guests,
-            (SELECT COUNT(*) FROM EVENTO_CARRINHO ec WHERE ec.id_evento = e.id_evento) AS carts
+            (SELECT COUNT(*) FROM EVENTO_CARRINHO ec WHERE ec.FK_Evento_id_evento = e.id_evento) AS carts
         FROM Evento e
+        JOIN Cliente c ON e.fk_Cliente_id_cliente = c.id_cliente
         WHERE e.data_evento >= CURRENT_DATE
         ORDER BY e.data_evento ASC
         LIMIT 5
@@ -32,19 +34,19 @@ const getDashboardData = async (year, month) => {
 
     // 3. Ocupação de Carrinhos
     const [totalCarts] = await pool.query(`
-        SELECT tamanho AS type, COUNT(id_carrinho) AS total 
+        SELECT tipo_base AS type, COUNT(id_carrinho) AS total 
         FROM Carrinho 
         WHERE ativo = TRUE 
-        GROUP BY tamanho
+        GROUP BY tipo_base
     `);
 
     const [occupiedCarts] = await pool.query(`
-        SELECT c.tamanho AS type, COUNT(DISTINCT c.id_carrinho) AS occupied
+        SELECT c.tipo_base AS type, COUNT(DISTINCT c.id_carrinho) AS occupied
         FROM Carrinho c
-        JOIN EVENTO_CARRINHO ec ON c.id_carrinho = ec.id_carrinho
-        JOIN Evento e ON ec.id_evento = e.id_evento
+        JOIN EVENTO_CARRINHO ec ON c.id_carrinho = ec.FK_Carrinho_id_carrinho
+        JOIN Evento e ON ec.FK_Evento_id_evento = e.id_evento
         WHERE YEAR(e.data_evento) = ? AND MONTH(e.data_evento) = ? AND c.ativo = TRUE
-        GROUP BY c.tamanho
+        GROUP BY c.tipo_base
     `, [year, month]);
 
     const cartOccupancy = totalCarts.map(cart => {
