@@ -1,0 +1,142 @@
+.calendar {
+    width: 100%;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* ===== Cabeçalho ===== */
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    border-bottom: 1px solid #ddd;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.calendar-header-esquerda {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.calendar-header h2 {
+    margin: 0;
+    font-size: 20px;
+    color: #e23d3b;
+    text-transform: capitalize;
+}
+
+.calendar-header button {
+    border: none;
+    background: none;
+    color: #e23d3b;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 12px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.calendar-header button:hover {
+    background-color: #f3f3f3;
+}
+
+/* ===== Segmented control (Mês / Semana / Dia) ===== */
+.segmented-control {
+    display: inline-flex;
+    background-color: #f3f4f5;
+    border-radius: 8px;
+    padding: 4px;
+    gap: 2px;
+}
+
+.segmented-control button {
+    padding: 6px 14px;
+    border: none;
+    background: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #5a403c;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.segmented-control button:hover {
+    color: #191c1d;
+}
+
+.segmented-control button.ativo {
+    background-color: white;
+    color: #e23d3b;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== Grid de dias ===== */
+.week-days,
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.week-days span {
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 12px;
+    background-color: #f3f3f3;
+    color: #5a403c;
+}
+
+.calendar-cell {
+    min-height: 90px;
+    padding: 6px;
+    border-top: 1px solid #eee;
+    border-right: 1px solid #eee;
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow: hidden;
+}
+
+.numero-dia {
+    font-weight: 600;
+    color: #191c1d;
+}
+
+/* ===== Pills de evento ===== */
+.pill-evento {
+    font-size: 10px;
+    line-height: 1.2;
+    font-weight: 600;
+    padding: 3px 6px;
+    border-radius: 4px;
+    border-left: 3px solid;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+}
+
+.pill-evento.corporativo {
+    background-color: rgba(226, 61, 59, 0.15);
+    color: #e23d3b;
+    border-color: #e23d3b;
+}
+
+.pill-evento.casamento {
+    background-color: #ffe088;
+    color: #735c00;
+    border-color: #735c00;
+}
+
+.pill-evento.tech {
+    background-color: #e4e4cc;
+    color: #2c2e1d;
+    border-color: #2c2e1d;
+}
