@@ -3,6 +3,12 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
+
+app.use((req, res, next) => {
+    console.log(`Requisição rececebida de ${req.ip}; ${req.method} ${req.originalUrl}`);
+    next();
+});
+
 app.use(cors());
 app.use(express.json());
 
