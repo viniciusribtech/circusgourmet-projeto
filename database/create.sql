@@ -12,6 +12,7 @@ CREATE TABLE Cliente (
 );
 
 CREATE TABLE Evento (
+    nome_evento VARCHAR (50) NOT NULL,
     id_evento INTEGER AUTO_INCREMENT PRIMARY KEY,
     data_evento DATE NOT NULL,
     horario_inicio TIME NOT NULL,
