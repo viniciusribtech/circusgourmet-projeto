@@ -73,4 +73,40 @@ const getDashboardData = async (year, month) => {
     };
 };
 
-module.exports = { getDashboardData };
+const criarEvento = async (dadosEvento) => {
+    // Mapeamento exato de todos os campos NOT NULL da tabela Evento
+    const { 
+        nome_evento, 
+        data_evento, 
+        horario_inicio, 
+        horario_fim, 
+        local, 
+        status, 
+        n_convidados, 
+        fk_Cliente_id_cliente 
+    } = dadosEvento;
+    
+    const query = `
+        INSERT INTO Evento 
+        (nome_evento, data_evento, horario_inicio, horario_fim, local, status, n_convidados, fk_Cliente_id_cliente) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    
+    const [resultado] = await pool.query(query, [
+        nome_evento,
+        data_evento, 
+        horario_inicio,
+        horario_fim,
+        local, 
+        status || 'Pendente', 
+        n_convidados, 
+        fk_Cliente_id_cliente
+    ]);
+    
+    return resultado;
+};
+
+module.exports = { 
+    getDashboardData,
+    criarEvento 
+};

@@ -8,11 +8,39 @@ import EstatisticasRapidas from "../../components/EstatisticasRapidas/estatistic
 
 import "./home.css";
 
+import { useState, useEffect } from 'react';
 
 
 
 
 function Home() {
+  // 1. Cria a variável que vai guardar os dados do MySQL
+  const [dadosDashboard, setDadosDashboard] = useState(null);
+
+    // 2. Chama o teu backend assim que a página Home carregar
+    useEffect(() => {
+        const carregarDados = async () => {
+            try {
+                // Bate na rota GET que tu e o Osmir criaram
+                const resposta = await fetch('http://localhost:3000/api/dashboard');
+                const json = await resposta.json();
+                
+                if (json.success) {
+                    console.log("Dados recebidos da API:", json.data);
+                    setDadosDashboard(json.data); // Guarda os dados no React
+                }
+            } catch (erro) {
+                console.error("Erro na conexão com o backend:", erro);
+            }
+        };
+
+        carregarDados();
+    }, []);
+
+    // 3. Mostra um "Carregando" rápido enquanto o Node.js não responde
+    if (!dadosDashboard) {
+        return <div style={{ padding: '20px' }}>A carregar dados do servidor...</div>;
+    }
   return (
     <>
       <Navbar />
@@ -29,12 +57,13 @@ function Home() {
 
         <div className="grid-principal">
           <div className="coluna-calendario">
-            <Calendar eventos={[]} />
+            <Calendar eventos={dadosDashboard.calendarEvents} />
           </div>
           <div className="coluna-lateral">
-            <OcupacaoCarrinhos carrinhos={[]} />
-            <ProximoEvento eventos ={[]} />
-            <EstatisticasRapidas orcamentos={[]} ativos={[]} />
+            <OcupacaoCarrinhos carrinhos={dadosDashboard.cartOccupancy} />
+            <ProximoEvento eventos ={dadosDashboard.upcomingEvents} />
+            <EstatisticasRapidas orcamentos={dadosDashboard.statistics.budgets} 
+            ativos={dadosDashboard.statistics.activeCarts} />
           </div>
         </div>
       </div>
