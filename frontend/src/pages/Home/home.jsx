@@ -7,40 +7,39 @@ import ProximoEvento from "../../components/ProximoEvento/proximoEvento.jsx";
 import EstatisticasRapidas from "../../components/EstatisticasRapidas/estatisticasRapidas.jsx"
 
 import "./home.css";
-
 import { useState, useEffect } from 'react';
 
-
-
-
 function Home() {
-  // 1. Cria a variável que vai guardar os dados do MySQL
   const [dadosDashboard, setDadosDashboard] = useState(null);
+  const [dataSelecionada, setDataSelecionada] = useState(new Date());
 
-    // 2. Chama o teu backend assim que a página Home carregar
-    useEffect(() => {
-        const carregarDados = async () => {
-            try {
-                // Bate na rota GET que tu e o Osmir criaram
-                const resposta = await fetch('http://localhost:3000/api/dashboard');
-                const json = await resposta.json();
-                
-                if (json.success) {
-                    console.log("Dados recebidos da API:", json.data);
-                    setDadosDashboard(json.data); // Guarda os dados no React
-                }
-            } catch (erro) {
-                console.error("Erro na conexão com o backend:", erro);
-            }
-        };
+  // Função para buscar os dados da API considerando o ano e o mês ativos
+  const carregarDados = async (dataFiltro) => {
+      try {
+          const ano = dataFiltro.getFullYear();
+          const mes = dataFiltro.getMonth() + 1;
 
-        carregarDados();
-    }, []);
+          const resposta = await fetch(`http://localhost:3000/api/dashboard?year=${ano}&month=${mes}`);
+          const json = await resposta.json();
+          
+          if (json.success) {
+              console.log("Dados recebidos da API:", json.data);
+              setDadosDashboard(json.data);
+          }
+      } catch (erro) {
+          console.error("Erro na conexão com o backend:", erro);
+      }
+  };
 
-    // 3. Mostra um "Carregando" rápido enquanto o Node.js não responde
-    if (!dadosDashboard) {
-        return <div style={{ padding: '20px' }}>A carregar dados do servidor...</div>;
-    }
+  // Carrega os dados sempre que a página monta ou a data selecionada muda
+  useEffect(() => {
+      carregarDados(dataSelecionada);
+  }, [dataSelecionada]);
+
+  if (!dadosDashboard) {
+      return <div style={{ padding: '20px' }}>A carregar dados do servidor...</div>;
+  }
+
   return (
     <>
       <Navbar />
@@ -57,13 +56,19 @@ function Home() {
 
         <div className="grid-principal">
           <div className="coluna-calendario">
-            <Calendar eventos={dadosDashboard.calendarEvents} />
+            {/* Passamos a função para atualizar o mês quando o usuário clicar nas setas */}
+            <Calendar 
+                eventos={dadosDashboard.calendarEvents} 
+                onMudancaMes={(novaData) => setDataSelecionada(novaData)}
+            />
           </div>
           <div className="coluna-lateral">
             <OcupacaoCarrinhos carrinhos={dadosDashboard.cartOccupancy} />
-            <ProximoEvento eventos ={dadosDashboard.upcomingEvents} />
-            <EstatisticasRapidas orcamentos={dadosDashboard.statistics.budgets} 
-            ativos={dadosDashboard.statistics.activeCarts} />
+            <ProximoEvento eventos={dadosDashboard.upcomingEvents} />
+            <EstatisticasRapidas 
+              orcamentos={dadosDashboard.statistics.budgets} 
+              ativos={dadosDashboard.statistics.activeCarts} 
+            />
           </div>
         </div>
       </div>

@@ -1,34 +1,35 @@
 import { useState } from 'react';
 import './calendar.css';
 
-function Calendar({eventos= []}) {
+function Calendar({ eventos = [], onMudancaMes }) {
     const [dataAtual, setDataAtual] = useState(new Date());
-    const [visualizacao, setVisualizacao] = useState('mes');
 
     const ano = dataAtual.getFullYear();
     const mes = dataAtual.getMonth();
 
-    const primeiroDia = new Date(ano, mes, 1).getDay(); // qual dia da semana é o primeiro dia do mês (0 = domingo, 1 = segunda, ..., 6 = sábado)
-    const quantidadeDias = new Date(ano, mes + 1, 0).getDate(); // quantos dias tem o mês (0 = último dia do mês anterior, então usamos mes + 1 e dia 0)
+    const primeiroDia = new Date(ano, mes, 1).getDay();
+    const quantidadeDias = new Date(ano, mes + 1, 0).getDate();
 
     const dias = [];
 
-    // Espaços antes do primeiro dia do mês
     for (let i = 0; i < primeiroDia; i++) {
         dias.push(null);
     }
 
-    // Dias do mês
     for (let dia = 1; dia <= quantidadeDias; dia++) {
         dias.push(dia);
     }
 
     function mesAnterior() {
-        setDataAtual(new Date(ano, mes - 1, 1));
+        const novaData = new Date(ano, mes - 1, 1);
+        setDataAtual(novaData);
+        if (onMudancaMes) onMudancaMes(novaData); // Avisa o componente Pai (Home)
     }
 
     function proximoMes() {
-        setDataAtual(new Date(ano, mes + 1, 1));
+        const novaData = new Date(ano, mes + 1, 1);
+        setDataAtual(novaData);
+        if (onMudancaMes) onMudancaMes(novaData); // Avisa o componente Pai (Home)
     }
 
     const nomeMes = dataAtual.toLocaleDateString('pt-BR', {
@@ -40,7 +41,7 @@ function Calendar({eventos= []}) {
         if (!dia) return [];
 
         return eventos.filter((evento) => {
-            const dataEvento = new Date(evento.data);
+            const dataEvento = new Date(evento.data + 'T00:00:00'); // Evita problemas de fuso horário
 
             return (
                 dataEvento.getFullYear() === ano &&
@@ -49,7 +50,6 @@ function Calendar({eventos= []}) {
             );
         });
     }
-
 
     return (
         <div className="calendar">
@@ -60,39 +60,38 @@ function Calendar({eventos= []}) {
                     <button onClick={proximoMes}> &gt;</button>
                 </div>
             </div>
-        
 
            <div className="week-days">
-    <span>Dom</span>
-    <span>Seg</span>
-    <span>Ter</span>
-    <span>Qua</span>
-    <span>Qui</span>
-    <span>Sex</span>
-    <span>Sáb</span>
-</div>
-
-<div className="calendar-days">
-    {dias.map((dia, index) => {
-        const eventosDia = eventosDoDia(dia);
-
-        return (
-            <div key={index} className="calendar-cell">
-                <span className="numero-dia">{dia}</span>
-
-                {eventosDia.map((evento, i) => (
-                    <div
-                        key={i}
-                        className={`pill-evento ${evento.categoria || 'corporativo'}`}
-                        title={evento.titulo}
-                    >
-                        {evento.titulo}
-                    </div>
-                ))}
+                <span>Dom</span>
+                <span>Seg</span>
+                <span>Ter</span>
+                <span>Qua</span>
+                <span>Qui</span>
+                <span>Sex</span>
+                <span>Sáb</span>
             </div>
-        );
-    })}
-</div>
+
+            <div className="calendar-days">
+                {dias.map((dia, index) => {
+                    const eventosDia = eventosDoDia(dia);
+
+                    return (
+                        <div key={index} className="calendar-cell">
+                            <span className="numero-dia">{dia}</span>
+
+                            {eventosDia.map((evento, i) => (
+                                <div
+                                    key={i}
+                                    className={`pill-evento ${evento.categoria || 'corporativo'}`}
+                                    title={evento.titulo}
+                                >
+                                    {evento.titulo}
+                                </div>
+                            ))}
+                        </div>
+                    );
+                })}
+            </div>
         </div>
     );
 }
