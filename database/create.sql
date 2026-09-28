@@ -1,5 +1,5 @@
 DROP DATABASE IF EXISTS buffet_eventos;
-CREATE DATABASE buffet_eventos;
+CREATE DATABASE buffet_eventos CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;;
 USE buffet_eventos;
 
 
