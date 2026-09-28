@@ -12,4 +12,13 @@ const pool = mysql.createPool({
     queueLimit: 0
 });
 
+pool.query('SELECT 1')
+    .then(() => {
+        console.log('Banco de dados conectado com sucesso!');
+    })
+    .catch((erro) => {
+        console.log('Erro ao conectar com o banco:');
+        console.log(erro.message);
+    });
+
 module.exports = pool;
