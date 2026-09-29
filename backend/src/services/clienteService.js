@@ -4,7 +4,7 @@ const pool = require('../database/connection')
 // 1. Listar todos os clientes (com paginação opcional ou geral)
 async function listarClientes(){
     try{
-        const [rows] = await pool.query('SELECT * FROM cliente ORDER BY id_cliente DESC')
+        const [rows] = await pool.query('SELECT * FROM Cliente ORDER BY id_cliente DESC')
         return rows;
     }catch(erro){
         console.error("Erro ao listar", erro);
