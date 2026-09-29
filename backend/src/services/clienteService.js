@@ -17,7 +17,7 @@ async function buscarClientes(termo) {
     try {
         const query = `
             SELECT * FROM Cliente 
-            WHERE nome LIKE ? OR sobrenome LIKE ? OR telefone LIKE ?
+            WHERE nome LIKE ? OR telefone LIKE ?
         `;
         const wildcard = `%${termo}%`;
         const [rows] = await pool.query(query, [wildcard, wildcard, wildcard]);
@@ -30,7 +30,7 @@ async function buscarClientes(termo) {
 
 // 3. Cadastrar Cliente
 async function cadastrarCliente(dados) {
-    const { nome, sobrenome, telefone } = dados;
+    const { nome, telefone } = dados;
 
     // Validação de campos obrigatórios conforme
     if (!nome || !telefone) {
@@ -38,13 +38,12 @@ async function cadastrarCliente(dados) {
     }
 
     try {
-        const query = 'INSERT INTO Cliente (nome, sobrenome, telefone) VALUES (?, ?, ?)';
-        const [resultado] = await pool.query(query, [nome, sobrenome || '', telefone]);
+        const query = 'INSERT INTO Cliente (nome, telefone) VALUES (?, ?)';
+        const [resultado] = await pool.query(query, [nome || '', telefone]);
         
         return {
             id_cliente: resultado.insertId,
             nome,
-            sobrenome,
             telefone
         };
     } catch (erro) {
@@ -55,21 +54,21 @@ async function cadastrarCliente(dados) {
 
 // 4. Atualizar Cliente
 async function atualizarCliente(id, dados) {
-    const { nome, sobrenome, telefone } = dados;
+    const { nome, telefone } = dados;
 
     if (!nome || !telefone) {
         throw new Error("Campos obrigatórios não preenchidos!");
     }
 
     try {
-        const query = 'UPDATE Cliente SET nome = ?, sobrenome = ?, telefone = ? WHERE id_cliente = ?';
-        const [resultado] = await pool.query(query, [nome, sobrenome || '', telefone, id]);
+        const query = 'UPDATE Cliente SET nome = ?, telefone = ? WHERE id_cliente = ?';
+        const [resultado] = await pool.query(query, [nome || '', telefone, id]);
 
         if (resultado.affectedRows === 0) {
             throw new Error("Cliente não encontrado!");
         }
 
-        return { id_cliente: id, nome, sobrenome, telefone };
+        return { id_cliente: id, nome, telefone };
     } catch (erro) {
         console.error("Erro ao atualizar cliente:", erro);
         throw erro;
@@ -83,8 +82,10 @@ async function excluirCliente(id) {
         const queryEventosFuturos = `
             SELECT COUNT(*) AS total 
             FROM Evento 
-            WHERE id_cliente = ? AND data_evento >= CURDATE()
-        `;
+            WHERE fk_Cliente_id_cliente = ? AND data_evento >= CURDATE() 
+        `; // o data_evento >= CURDATE(), vai de encontro ao ON DELETE RESTRICT do nosso create.sql,
+           // pois ele impede que QUALQUER cliente com evento vinculado seja excluído, independentemente
+           // se está no passado ou no futuro. Pensar melhor sobre isso, pra saber o que a gente vai alterar. 
         const [eventos] = await pool.query(queryEventosFuturos, [id]);
 
         if (eventos[0].total > 0) {
