@@ -34,7 +34,12 @@ function Home() {
           <div className="coluna-lateral">
             <OcupacaoCarrinhos carrinhos={[]} />
             <ProximoEvento eventos ={[]} />
+<<<<<<< Updated upstream
             <EstatisticasRapidas orcamentos={[]} ativos={[]} />
+=======
+            <EstatisticasRapidas orcamentos={[]} 
+            ativos={[]} />
+>>>>>>> Stashed changes
           </div>
         </div>
       </div>

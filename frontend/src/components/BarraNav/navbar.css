@@ -34,7 +34,7 @@
     margin-left: 40px;
 }
 
-.nav-links button {
+.nav-links a {
      border: none;
     background: none;
     color: #5a403c;
@@ -48,7 +48,7 @@
     position: relative;
 }
 
-.nav-links button::after {
+.nav-links a::after {
     content: '';
     position: absolute;
     bottom: 2px;
@@ -61,6 +61,26 @@
     transition: transform 0.2s ease;
 }
 
-.nav-links button:hover {
+.nav-links a:hover {
     color: #e23d3b;
+}
+
+/* Links do React Router (NavLink) */
+.nav-links a {
+    display: inline-block;
+    text-decoration: none;
+}
+
+.logo a {
+    display: flex;
+    align-items: center;
+}
+
+/* Item da página atual */
+.nav-links a.active {
+    color: #e23d3b;
+}
+
+.nav-links a.active::after {
+    transform: translateX(-50%) scaleX(1);
 }
