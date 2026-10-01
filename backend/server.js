@@ -30,3 +30,8 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => { 
     console.log(`Servidor rodando com sucesso na porta ${PORT}`); 
 });
+
+// rota do cliente
+const clienteRoutes = require('./src/routes/clienteRoutes');
+
+app.use('/api', clienteRoutes);
