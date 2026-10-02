@@ -6,7 +6,8 @@ import Botao from "../../components/Botao/botao.jsx";
 import CampoPesquisa from "../../components/CampoPesquisa/campoPesquisa.jsx";
 import TabelaCliente from "../../components/TabelaCliente/tabelaCliente.jsx";
 import Paginacao from "../../components/Paginacao/paginacao.jsx";
-import PopUpCliente from "../../components/PopUpCliente/popUpCliente.jsx";
+import PopUpFormulario from "../../components/PopUpFormulario/popUpFormulario.jsx";
+import PopUpConfirmacao from "../../components/PopUpConfirmacao/popUpConfirmacao.jsx";
 
 import "./cliente.css";
 
@@ -21,6 +22,9 @@ function Clientes() {
 
     const [popupAberto, setPopupAberto] = useState(false);
     const [clienteEditando, setClienteEditando] = useState(null);
+
+    const [popupExclusaoAberto, setPopupExclusaoAberto] = useState(false);
+    const [clienteExcluindo, setClienteExcluindo] = useState(null);
 
     const clientesPorPagina = 4;
 
@@ -171,19 +175,23 @@ function Clientes() {
 
     /*
      * EXCLUIR CLIENTE
+     *
+     * ADICIONADO:
+     * Agora apenas abre o popup de confirmação.
      */
-    const excluirCliente = async (id) => {
-        const confirmar = window.confirm(
-            "Deseja realmente excluir este cliente?"
-        );
+    const excluirCliente = (cliente) => {
+        setClienteExcluindo(cliente);
+        setPopupExclusaoAberto(true);
+    };
 
-        if (!confirmar) {
-            return;
-        }
-
+    /*
+     * ADICIONADO:
+     * EXCLUIR CLIENTE APÓS CONFIRMAÇÃO
+     */
+    const confirmarExclusao = async () => {
         try {
             const resposta = await fetch(
-                `http://localhost:3000/api/clientes/${id}`,
+                `http://localhost:3000/api/clientes/${clienteExcluindo.id_cliente}`,
                 {
                     method: "DELETE"
                 }
@@ -196,6 +204,9 @@ function Clientes() {
                     resultado.mensagem || "Erro ao excluir cliente."
                 );
             }
+
+            setPopupExclusaoAberto(false);
+            setClienteExcluindo(null);
 
             await carregarClientes();
 
@@ -345,6 +356,22 @@ function Clientes() {
                 ]}
                 onSalvar={salvarCliente}
                 onFechar={fecharPopup}
+            />
+
+    
+            <PopUpConfirmacao
+                aberto={popupExclusaoAberto}
+                titulo="Excluir cliente"
+                mensagem={
+                    clienteExcluindo
+                        ? `Deseja realmente excluir o cliente "${clienteExcluindo.nome}"?`
+                        : ""
+                }
+                onConfirmar={confirmarExclusao}
+                onFechar={() => {
+                    setPopupExclusaoAberto(false);
+                    setClienteExcluindo(null);
+                }}
             />
 
         </>
