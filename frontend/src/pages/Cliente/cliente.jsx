@@ -6,7 +6,7 @@ import Botao from "../../components/Botao/botao.jsx";
 import CampoPesquisa from "../../components/CampoPesquisa/campoPesquisa.jsx";
 import TabelaCliente from "../../components/TabelaCliente/tabelaCliente.jsx";
 import Paginacao from "../../components/Paginacao/paginacao.jsx";
-import PopUpFormulario from "../../components/PopUpCliente/popUpCliente.jsx";
+import PopUpCliente from "../../components/PopUpCliente/popUpCliente.jsx";
 
 import "./cliente.css";
 
