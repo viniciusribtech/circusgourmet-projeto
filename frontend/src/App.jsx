@@ -24,6 +24,7 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/clientes" element={<Clientes />} />
                 <Route path="/clientes/novo" element={<CadastroCliente />} />
+                <Route path="/clientes/:id/editar" element={<CadastroCliente />} />
 
                 {/* Qualquer outra rota (Serviço, Evento, etc.) */}
                 <Route path="*" element={<EmConstrucao />} />
