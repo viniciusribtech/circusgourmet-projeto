@@ -1,6 +1,5 @@
 .tabela-clientes {
-    max-width: 1200px;
-    margin: 0 auto;
+    width: 100%;
     border: 1px solid #ead5d1;
     border-radius: 7px;
     overflow: hidden;
@@ -20,9 +19,12 @@
 .tabela-clientes th {
     height: 34px;
     padding: 0 12px;
+
     border-bottom: 1px solid #ead5d1;
+
     color: #6d5b57;
     text-align: left;
+
     font-size: 8px;
     font-weight: 700;
 }
@@ -30,7 +32,9 @@
 .tabela-clientes td {
     height: 35px;
     padding: 0 12px;
+
     border-bottom: 1px solid #ead5d1;
+
     color: #403532;
     font-size: 10px;
 }
@@ -43,22 +47,29 @@
     background-color: #fffafa;
 }
 
-.coluna-acoes {
-    width: 90px;
-    text-align: center !important;
-}
+/* Coluna das ações */
 
-.acoes {
+.tabela-clientes .coluna-acoes {
+    width: 90px;
     text-align: center;
 }
+
+.tabela-clientes .acoes {
+    text-align: center;
+}
+
+/* Botões de editar e excluir */
 
 .botao-acao {
     width: 25px;
     height: 25px;
     padding: 0;
+
     border: none;
     background-color: transparent;
+
     color: #68443d;
+
     cursor: pointer;
     font-size: 13px;
 }
@@ -66,6 +77,8 @@
 .botao-acao:hover {
     transform: scale(1.1);
 }
+
+/* Mensagem quando não existem clientes */
 
 .nenhum-cliente {
     height: 80px !important;

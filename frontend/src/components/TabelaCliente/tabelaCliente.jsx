@@ -1,6 +1,6 @@
 import "./tabelaCliente.css";
 
-function TabelaClientes({ clientes, onEditar, onExcluir }) {
+function TabelaCliente({ clientes, onEditar, onExcluir }) {
     return (
         <div className="tabela-clientes">
             <table>
@@ -15,10 +15,7 @@ function TabelaClientes({ clientes, onEditar, onExcluir }) {
                 <tbody>
                     {clientes.length === 0 ? (
                         <tr>
-                            <td
-                                colSpan="3"
-                                className="nenhum-cliente"
-                            >
+                            <td colSpan="3" className="nenhum-cliente">
                                 Nenhum cliente encontrado.
                             </td>
                         </tr>
@@ -26,7 +23,6 @@ function TabelaClientes({ clientes, onEditar, onExcluir }) {
                         clientes.map((cliente) => (
                             <tr key={cliente.id_cliente}>
                                 <td>{cliente.nome}</td>
-
                                 <td>{cliente.telefone}</td>
 
                                 <td className="acoes">
@@ -40,9 +36,7 @@ function TabelaClientes({ clientes, onEditar, onExcluir }) {
 
                                     <button
                                         className="botao-acao excluir"
-                                        onClick={() =>
-                                            onExcluir(cliente.id_cliente)
-                                        }
+                                        onClick={() => onExcluir(cliente.id_cliente)}
                                         title="Excluir cliente"
                                     >
                                         🗑
@@ -57,4 +51,4 @@ function TabelaClientes({ clientes, onEditar, onExcluir }) {
     );
 }
 
-export default TabelaClientes;
+export default TabelaCliente;
