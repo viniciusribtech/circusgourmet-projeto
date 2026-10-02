@@ -2,8 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 import Navbar from './components/BarraNav/navbar.jsx';
 import Home from './pages/Home/home';
-import Clientes from './pages/Clientes/clientes';
-import CadastroCliente from './pages/CadastroCliente/cadastroCliente';
+import Clientes from './pages/Cliente/cliente';
 
 // Página provisória para rotas que ainda não foram criadas
 function EmConstrucao() {
@@ -23,8 +22,6 @@ function App() {
             <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/clientes" element={<Clientes />} />
-                <Route path="/clientes/novo" element={<CadastroCliente />} />
-                <Route path="/clientes/:id/editar" element={<CadastroCliente />} />
 
                 {/* Qualquer outra rota (Serviço, Evento, etc.) */}
                 <Route path="*" element={<EmConstrucao />} />
