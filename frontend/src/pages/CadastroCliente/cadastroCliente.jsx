@@ -1,54 +1,79 @@
 import Navbar from "../../components/BarraNav/navbar.jsx";
 import Botao from "../../components/Botao/botao.jsx";
+import {
+  cadastrarCliente,
+  atualizarCliente,
+  listarClientes,
+  mensagemDeErro,
+} from "../../services/clienteService.js";
 
 import "./cadastroCliente.css";
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 
+// Mesmos campos da tabela Cliente: nome VARCHAR(50), telefone VARCHAR(15)
 const VALORES_INICIAIS = {
   nome: "",
-  sobrenome: "",
   telefone: "",
-  cpfCnpj: "",
 };
 
-// ---------- Máscaras ----------
+// ---------- Máscara de telefone: (77) 99999-9999 (15 caracteres) ----------
 function mascararTelefone(valor) {
-  const d = valor.replace(/\D/g, "").slice(0, 11);
+  const d = (valor || "").replace(/\D/g, "").slice(0, 11);
   if (d.length <= 2) return d;
   if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
   if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
   return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
 }
 
-function mascararCpfCnpj(valor) {
-  const d = valor.replace(/\D/g, "").slice(0, 14);
-
-  // CPF: 000.000.000-00
-  if (d.length <= 11) {
-    let r = d.slice(0, 3);
-    if (d.length > 3) r += `.${d.slice(3, 6)}`;
-    if (d.length > 6) r += `.${d.slice(6, 9)}`;
-    if (d.length > 9) r += `-${d.slice(9, 11)}`;
-    return r;
-  }
-
-  // CNPJ: 00.000.000/0000-00
-  let r = `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}`;
-  r += `/${d.slice(8, 12)}`;
-  if (d.length > 12) r += `-${d.slice(12, 14)}`;
-  return r;
-}
-
+// Esta tela serve para cadastrar (/clientes/novo) e editar (/clientes/:id/editar)
 function CadastroCliente() {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const { state } = useLocation();
+  const modoEdicao = Boolean(id);
 
-  const [valores, setValores] = useState(VALORES_INICIAIS);
+  // Na edição, abre já preenchido com o cliente enviado pela lista
+  const [valores, setValores] = useState(() =>
+    state?.cliente
+      ? {
+          nome: state.cliente.nome,
+          telefone: mascararTelefone(state.cliente.telefone),
+        }
+      : VALORES_INICIAIS
+  );
   const [erros, setErros] = useState({});
-  const [duplicado, setDuplicado] = useState(false);
+  const [erroEnvio, setErroEnvio] = useState(null); // mensagem vinda do backend
   const [enviando, setEnviando] = useState(false);
   const [toastVisivel, setToastVisivel] = useState(false);
+
+  // Edição aberta direto pela URL (ex.: F5): o backend não tem busca por id,
+  // então procura o cliente na lista
+  useEffect(() => {
+    if (!modoEdicao || state?.cliente) return;
+
+    const carregarCliente = async () => {
+      try {
+        const lista = await listarClientes();
+        const cliente = lista.find((c) => String(c.id_cliente) === id);
+
+        if (cliente) {
+          setValores({
+            nome: cliente.nome,
+            telefone: mascararTelefone(cliente.telefone),
+          });
+        } else {
+          setErroEnvio("Cliente não encontrado.");
+        }
+      } catch (erro) {
+        console.error("Erro ao carregar cliente:", erro);
+        setErroEnvio(mensagemDeErro(erro));
+      }
+    };
+
+    carregarCliente();
+  }, [id, modoEdicao, state]);
 
   const atualizarCampo = (campo, valor) => {
     setValores((anterior) => ({ ...anterior, [campo]: valor }));
@@ -63,11 +88,6 @@ function CadastroCliente() {
     }
     if (!valores.telefone.trim()) {
       novosErros.telefone = "Telefone é obrigatório para contato.";
-    }
-
-    const digitos = valores.cpfCnpj.replace(/\D/g, "");
-    if (digitos.length !== 11 && digitos.length !== 14) {
-      novosErros.cpfCnpj = "Formato de CPF/CNPJ inválido.";
     }
 
     setErros(novosErros);
@@ -85,41 +105,31 @@ function CadastroCliente() {
   // ---------- Envio ----------
   const aoEnviar = async (e) => {
     e.preventDefault();
-    setDuplicado(false);
+    setErroEnvio(null);
 
     if (!validar()) return;
 
     setEnviando(true);
     try {
-      // TODO (backend): rota POST de cadastro de cliente
-      const resposta = await fetch("http://localhost:3000/api/clientes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nome: valores.nome.trim(),
-          sobrenome: valores.sobrenome.trim(),
-          telefone: valores.telefone,
-          cpfCnpj: valores.cpfCnpj.replace(/\D/g, ""),
-        }),
-      });
+      const dados = {
+        nome: valores.nome.trim(),
+        telefone: valores.telefone,
+      };
 
-      // Backend deve responder 409 quando o CPF/CNPJ já existir
-      if (resposta.status === 409) {
-        setDuplicado(true);
-        return;
-      }
-
-      const json = await resposta.json();
-
-      if (json.success) {
-        setValores(VALORES_INICIAIS);
-        setErros({});
-        mostrarToast();
+      if (modoEdicao) {
+        // PUT /api/clientes/:id  { nome, telefone }
+        await atualizarCliente(id, dados);
       } else {
-        console.error("Erro ao cadastrar cliente:", json);
+        // POST /api/clientes  { nome, telefone }  -> 201
+        await cadastrarCliente(dados);
+        setValores(VALORES_INICIAIS);
       }
+
+      setErros({});
+      mostrarToast();
     } catch (erro) {
-      console.error("Erro na conexão com o backend:", erro);
+      console.error("Erro ao salvar cliente:", erro);
+      setErroEnvio(mensagemDeErro(erro));
     } finally {
       setEnviando(false);
     }
@@ -135,40 +145,30 @@ function CadastroCliente() {
 
           <div className="cartao-cadastro-corpo">
             <div className="cadastro-cabecalho">
-              <h1>Novo Cliente</h1>
-              <p>Cadastre os detalhes do cliente para iniciar o atendimento gourmet.</p>
+              <h1>{modoEdicao ? "Editar Cliente" : "Novo Cliente"}</h1>
+              <p>
+                {modoEdicao
+                  ? "Atualize os dados do cliente e salve as alterações."
+                  : "Cadastre os detalhes do cliente para iniciar o atendimento gourmet."}
+              </p>
             </div>
 
             <form className="form-cadastro" onSubmit={aoEnviar} noValidate>
-              <div className="form-linha">
-                {/* Nome */}
-                <div className="campo">
-                  <label htmlFor="nome">
-                    Nome <span className="obrigatorio">*</span>
-                  </label>
-                  <input
-                    id="nome"
-                    type="text"
-                    placeholder="Ex: Carlos"
-                    value={valores.nome}
-                    onChange={(e) => atualizarCampo("nome", e.target.value)}
-                    className={erros.nome ? "com-erro" : ""}
-                  />
-                  <span className="mensagem-erro">{erros.nome}</span>
-                </div>
-
-                {/* Sobrenome */}
-                <div className="campo">
-                  <label htmlFor="sobrenome">Sobrenome (Opcional)</label>
-                  <input
-                    id="sobrenome"
-                    type="text"
-                    placeholder="Ex: Silva"
-                    value={valores.sobrenome}
-                    onChange={(e) => atualizarCampo("sobrenome", e.target.value)}
-                  />
-                  <span className="mensagem-erro" />
-                </div>
+              {/* Nome */}
+              <div className="campo">
+                <label htmlFor="nome">
+                  Nome <span className="obrigatorio">*</span>
+                </label>
+                <input
+                  id="nome"
+                  type="text"
+                  maxLength={50}
+                  placeholder="Ex: Carlos Silva"
+                  value={valores.nome}
+                  onChange={(e) => atualizarCampo("nome", e.target.value)}
+                  className={erros.nome ? "com-erro" : ""}
+                />
+                <span className="mensagem-erro">{erros.nome}</span>
               </div>
 
               {/* Telefone */}
@@ -179,7 +179,8 @@ function CadastroCliente() {
                 <input
                   id="telefone"
                   type="tel"
-                  placeholder="(11) 99999-9999"
+                  maxLength={15}
+                  placeholder="(77) 99999-9999"
                   value={valores.telefone}
                   onChange={(e) =>
                     atualizarCampo("telefone", mascararTelefone(e.target.value))
@@ -189,31 +190,15 @@ function CadastroCliente() {
                 <span className="mensagem-erro">{erros.telefone}</span>
               </div>
 
-              {/* CPF / CNPJ */}
-              <div className="campo">
-                <label htmlFor="cpfCnpj">
-                  CPF / CNPJ <span className="obrigatorio">*</span>
-                </label>
-                <input
-                  id="cpfCnpj"
-                  type="text"
-                  placeholder="000.000.000-00"
-                  value={valores.cpfCnpj}
-                  onChange={(e) =>
-                    atualizarCampo("cpfCnpj", mascararCpfCnpj(e.target.value))
-                  }
-                  className={erros.cpfCnpj ? "com-erro" : ""}
-                />
-                <span className="mensagem-erro">{erros.cpfCnpj}</span>
-              </div>
-
-              {/* Aviso de duplicidade */}
-              {duplicado && (
-                <div className="aviso-duplicado" role="alert">
+              {/* Erro devolvido pelo backend / falha de conexão */}
+              {erroEnvio && (
+                <div className="aviso-erro" role="alert">
                   <span className="aviso-icone">⚠</span>
                   <div>
-                    <p className="aviso-titulo">Cliente já existe</p>
-                    <p>Um cliente com este CPF/CNPJ já consta no sistema.</p>
+                    <p className="aviso-titulo">
+                      {modoEdicao ? "Não foi possível salvar" : "Não foi possível cadastrar"}
+                    </p>
+                    <p>{erroEnvio}</p>
                   </div>
                 </div>
               )}
@@ -228,7 +213,11 @@ function CadastroCliente() {
                   Cancelar
                 </button>
                 <Botao type="submit" disabled={enviando}>
-                  {enviando ? "Cadastrando..." : "Cadastrar"}
+                  {enviando
+                    ? "Salvando..."
+                    : modoEdicao
+                    ? "Salvar alterações"
+                    : "Cadastrar"}
                 </Botao>
               </div>
             </form>
@@ -239,7 +228,11 @@ function CadastroCliente() {
       {/* Toast de sucesso */}
       <div className={`toast-sucesso ${toastVisivel ? "visivel" : ""}`}>
         <span className="toast-icone">✓</span>
-        <span>Cliente cadastrado com sucesso!</span>
+        <span>
+          {modoEdicao
+            ? "Cliente atualizado com sucesso!"
+            : "Cliente cadastrado com sucesso!"}
+        </span>
       </div>
     </>
   );

@@ -110,7 +110,7 @@
 }
 
 /* Aviso de duplicidade */
-.aviso-duplicado {
+.aviso-erro {
     display: flex;
     align-items: flex-start;
     gap: 12px;

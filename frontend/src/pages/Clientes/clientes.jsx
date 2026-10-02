@@ -1,6 +1,12 @@
 import Navbar from "../../components/BarraNav/navbar.jsx";
 import CabecalhoPagina from "../../components/CabecalhoPagina/cabecalhoPagina.jsx";
 import Botao from "../../components/Botao/botao.jsx";
+import {
+  listarClientes,
+  buscarClientes,
+  excluirCliente,
+  mensagemDeErro,
+} from "../../services/clienteService.js";
 
 // Reaproveita .conteudo-principal e .linha-titulo da Home
 import "../Home/home.css";
@@ -14,31 +20,37 @@ const POR_PAGINA = 4;
 function Clientes() {
   const navigate = useNavigate();
 
-  // Lista vinda do backend (MySQL). Formato esperado de cada item:
-  // { id, nome, sobrenome, telefone }
+  // Lista vinda do backend. Cada item: { id_cliente, nome, telefone }
   const [clientes, setClientes] = useState([]);
 
   const [busca, setBusca] = useState("");          // texto digitado
   const [termo, setTermo] = useState("");          // termo aplicado no filtro
   const [alerta, setAlerta] = useState(null);      // null | "vazio" | "invalido"
+  const [erroServidor, setErroServidor] = useState(null);
   const [pagina, setPagina] = useState(1);
 
-  // Chama o backend assim que a página carregar (mesmo padrão da Home)
+  // Exclusão
+  const [clienteParaExcluir, setClienteParaExcluir] = useState(null);
+  const [excluindo, setExcluindo] = useState(false);
+  const [mensagem, setMensagem] = useState(null);  // { tipo: "sucesso" | "erro", texto }
+
+  // Busca no backend: lista tudo ou filtra pelo termo (/clientes/buscar)
+  const carregarClientes = async (termoBusca = "") => {
+    try {
+      const dados = termoBusca
+        ? await buscarClientes(termoBusca)
+        : await listarClientes();
+
+      setClientes(dados);
+      setErroServidor(null);
+    } catch (erro) {
+      console.error("Erro ao carregar clientes:", erro);
+      setErroServidor(mensagemDeErro(erro));
+    }
+  };
+
+  // Carrega a lista assim que a página abrir
   useEffect(() => {
-    const carregarClientes = async () => {
-      try {
-        // TODO (backend): rota GET de clientes
-        const resposta = await fetch("http://localhost:3000/api/clientes");
-        const json = await resposta.json();
-
-        if (json.success) {
-          setClientes(json.data);
-        }
-      } catch (erro) {
-        console.error("Erro na conexão com o backend:", erro);
-      }
-    };
-
     carregarClientes();
   }, []);
 
@@ -59,8 +71,9 @@ function Clientes() {
     }
 
     setAlerta(null);
-    setTermo(consulta.toLowerCase());
+    setTermo(consulta);
     setPagina(1);
+    carregarClientes(consulta);
   };
 
   const limparBusca = () => {
@@ -68,24 +81,51 @@ function Clientes() {
     setTermo("");
     setAlerta(null);
     setPagina(1);
+    carregarClientes();
   };
 
   const aoPressionarTecla = (e) => {
     if (e.key === "Enter") lidarComBusca();
   };
 
-  // ---------- Filtro + paginação ----------
-  const clientesFiltrados = clientes.filter((c) =>
-    termo === ""
-      ? true
-      : `${c.nome} ${c.sobrenome} ${c.telefone}`.toLowerCase().includes(termo)
-  );
+  // ---------- Edição ----------
+  const editarCliente = (cliente) => {
+    // Envia o cliente junto para a tela de edição já abrir preenchida
+    navigate(`/clientes/${cliente.id_cliente}/editar`, { state: { cliente } });
+  };
 
-  const totalPaginas = Math.max(1, Math.ceil(clientesFiltrados.length / POR_PAGINA));
-  const inicio = (pagina - 1) * POR_PAGINA;
-  const clientesDaPagina = clientesFiltrados.slice(inicio, inicio + POR_PAGINA);
+  // ---------- Exclusão ----------
+  const mostrarMensagem = (tipo, texto) => {
+    setMensagem({ tipo, texto });
+    setTimeout(() => setMensagem(null), 5000);
+  };
 
-  const primeiroItem = clientesFiltrados.length === 0 ? 0 : inicio + 1;
+  const confirmarExclusao = async () => {
+    setExcluindo(true);
+    try {
+      // DELETE /api/clientes/:id
+      await excluirCliente(clienteParaExcluir.id_cliente);
+      setClienteParaExcluir(null);
+      mostrarMensagem("sucesso", "Cliente excluído com sucesso!");
+      await carregarClientes(termo);
+    } catch (erro) {
+      console.error("Erro ao excluir cliente:", erro);
+      setClienteParaExcluir(null);
+      // Ex.: "Não é possível excluir um cliente com eventos vinculados!"
+      mostrarMensagem("erro", mensagemDeErro(erro));
+    } finally {
+      setExcluindo(false);
+    }
+  };
+
+  // ---------- Paginação ----------
+  const totalPaginas = Math.max(1, Math.ceil(clientes.length / POR_PAGINA));
+  // Se a última página esvaziar (ex.: após excluir), volta para a anterior
+  const paginaAtual = Math.min(pagina, totalPaginas);
+  const inicio = (paginaAtual - 1) * POR_PAGINA;
+  const clientesDaPagina = clientes.slice(inicio, inicio + POR_PAGINA);
+
+  const primeiroItem = clientes.length === 0 ? 0 : inicio + 1;
   const ultimoItem = inicio + clientesDaPagina.length;
 
   return (
@@ -103,6 +143,21 @@ function Clientes() {
         </div>
 
         {/* Alertas de feedback */}
+        {mensagem && (
+          <div
+            className={`alerta ${mensagem.tipo === "sucesso" ? "alerta-sucesso" : "alerta-erro"}`}
+            role="alert"
+          >
+            <span className="alerta-icone">{mensagem.tipo === "sucesso" ? "✓" : "⚠"}</span>
+            <span>{mensagem.texto}</span>
+          </div>
+        )}
+        {erroServidor && (
+          <div className="alerta alerta-erro" role="alert">
+            <span className="alerta-icone">⚠</span>
+            <span>{erroServidor}</span>
+          </div>
+        )}
         {alerta === "vazio" && (
           <div className="alerta alerta-erro" role="alert">
             <span className="alerta-icone">⚠</span>
@@ -140,7 +195,7 @@ function Clientes() {
 
         {/* Tabela */}
         <div className="cartao-tabela">
-          {clientesFiltrados.length === 0 ? (
+          {clientes.length === 0 ? (
             termo !== "" ? (
               <div className="estado-vazio">
                 <div className="estado-vazio-icone">👤</div>
@@ -159,23 +214,21 @@ function Clientes() {
                 <thead>
                   <tr>
                     <th>Nome</th>
-                    <th>Sobrenome</th>
                     <th>Telefone</th>
                     <th className="coluna-acoes">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {clientesDaPagina.map((cliente) => (
-                    <tr key={cliente.id}>
+                    <tr key={cliente.id_cliente}>
                       <td>{cliente.nome}</td>
-                      <td>{cliente.sobrenome}</td>
                       <td>{cliente.telefone}</td>
                       <td className="coluna-acoes">
                         <div className="grupo-acoes">
                           <button
                             className="botao-icone"
                             title="Editar"
-                            onClick={() => alert(`Editar cliente ${cliente.id}`)}
+                            onClick={() => editarCliente(cliente)}
                           >
                             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M12 20h9" />
@@ -185,7 +238,7 @@ function Clientes() {
                           <button
                             className="botao-icone botao-icone-excluir"
                             title="Excluir"
-                            onClick={() => alert(`Excluir cliente ${cliente.id}`)}
+                            onClick={() => setClienteParaExcluir(cliente)}
                           >
                             <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                               <polyline points="3 6 5 6 21 6" />
@@ -207,20 +260,20 @@ function Clientes() {
           {/* Paginação */}
           <div className="rodape-tabela">
             <span className="info-paginacao">
-              Exibindo {primeiroItem}-{ultimoItem} de {clientesFiltrados.length} clientes
+              Exibindo {primeiroItem}-{ultimoItem} de {clientes.length} clientes
             </span>
             <div className="paginacao">
               <button
                 className="botao-pagina"
-                disabled={pagina === 1}
-                onClick={() => setPagina(pagina - 1)}
+                disabled={paginaAtual === 1}
+                onClick={() => setPagina(paginaAtual - 1)}
               >
                 ‹
               </button>
               {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((n) => (
                 <button
                   key={n}
-                  className={`botao-pagina ${n === pagina ? "ativa" : ""}`}
+                  className={`botao-pagina ${n === paginaAtual ? "ativa" : ""}`}
                   onClick={() => setPagina(n)}
                 >
                   {n}
@@ -228,8 +281,8 @@ function Clientes() {
               ))}
               <button
                 className="botao-pagina"
-                disabled={pagina === totalPaginas}
-                onClick={() => setPagina(pagina + 1)}
+                disabled={paginaAtual === totalPaginas}
+                onClick={() => setPagina(paginaAtual + 1)}
               >
                 ›
               </button>
@@ -237,6 +290,43 @@ function Clientes() {
           </div>
         </div>
       </div>
+
+      {/* Confirmação de exclusão */}
+      {clienteParaExcluir && (
+        <div
+          className="modal-fundo"
+          onClick={() => !excluindo && setClienteParaExcluir(null)}
+        >
+          <div
+            className="modal-caixa"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3>Excluir cliente?</h3>
+            <p>
+              Tem certeza que deseja excluir <strong>{clienteParaExcluir.nome}</strong>?
+              Essa ação não pode ser desfeita.
+            </p>
+            <div className="modal-acoes">
+              <button
+                className="modal-botao-cancelar"
+                disabled={excluindo}
+                onClick={() => setClienteParaExcluir(null)}
+              >
+                Cancelar
+              </button>
+              <button
+                className="modal-botao-excluir"
+                disabled={excluindo}
+                onClick={confirmarExclusao}
+              >
+                {excluindo ? "Excluindo..." : "Excluir"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
