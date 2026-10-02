@@ -1,0 +1,42 @@
+.campo-pesquisa {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.campo-pesquisa input {
+    flex: 1;
+    height: 34px;
+    padding: 0 12px;
+    border: 1px solid #ead5d1;
+    border-radius: 5px;
+    background-color: #ffffff;
+    color: #403532;
+    font-size: 10px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.campo-pesquisa input::placeholder {
+    color: #a79793;
+}
+
+.campo-pesquisa input:focus {
+    border-color: #b98478;
+}
+
+.campo-pesquisa button {
+    height: 34px;
+    padding: 0 14px;
+    border: 1px solid #e2b96b;
+    border-radius: 5px;
+    background-color: #fffdf8;
+    color: #795500;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+.campo-pesquisa button:hover {
+    background-color: #fff8e8;
+}
