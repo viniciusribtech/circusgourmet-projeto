@@ -9,6 +9,15 @@ import Paginacao from "../../components/Paginacao/paginacao.jsx";
 import PopUpFormulario from "../../components/PopUpFormulario/popUpFormulario.jsx";
 import PopUpConfirmacao from "../../components/PopUpConfirmacao/popUpConfirmacao.jsx";
 
+import {
+    listarClientes,
+    buscarClientes,
+    cadastrarCliente,
+    atualizarCliente,
+    excluirCliente,
+    mensagemDeErro
+} from "../../services/clienteService.js";
+
 import "./cliente.css";
 
 function Clientes() {
@@ -36,22 +45,14 @@ function Clientes() {
             setCarregando(true);
             setErro("");
 
-            const resposta = await fetch(
-                "http://localhost:3000/api/clientes"
-            );
-
-            if (!resposta.ok) {
-                throw new Error("Erro ao buscar clientes.");
-            }
-
-            const dados = await resposta.json();
+            const dados = await listarClientes();
 
             setClientes(dados);
             setPaginaAtual(1);
 
         } catch (erro) {
             console.error(erro);
-            setErro("Não foi possível carregar os clientes.");
+            setErro(mensagemDeErro(erro));
         } finally {
             setCarregando(false);
         }
@@ -77,22 +78,14 @@ function Clientes() {
                 return;
             }
 
-            const resposta = await fetch(
-                `http://localhost:3000/api/clientes/buscar?termo=${encodeURIComponent(termo)}`
-            );
-
-            if (!resposta.ok) {
-                throw new Error("Erro ao pesquisar clientes.");
-            }
-
-            const dados = await resposta.json();
+            const dados = await buscarClientes(termo);
 
             setClientes(dados);
             setPaginaAtual(1);
 
         } catch (erro) {
             console.error(erro);
-            setErro("Não foi possível realizar a pesquisa.");
+            setErro(mensagemDeErro(erro));
         } finally {
             setCarregando(false);
         }
@@ -127,38 +120,14 @@ function Clientes() {
      */
     const salvarCliente = async (dados) => {
         try {
-            let resposta;
 
             if (clienteEditando) {
-                resposta = await fetch(
-                    `http://localhost:3000/api/clientes/${clienteEditando.id_cliente}`,
-                    {
-                        method: "PUT",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify(dados)
-                    }
+                await atualizarCliente(
+                    clienteEditando.id_cliente,
+                    dados
                 );
             } else {
-                resposta = await fetch(
-                    "http://localhost:3000/api/clientes",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify(dados)
-                    }
-                );
-            }
-
-            const resultado = await resposta.json();
-
-            if (!resposta.ok) {
-                throw new Error(
-                    resultado.mensagem || "Erro ao salvar cliente."
-                );
+                await cadastrarCliente(dados);
             }
 
             fecharPopup();
@@ -168,7 +137,7 @@ function Clientes() {
             console.error(erro);
 
             alert(
-                erro.message || "Não foi possível salvar o cliente."
+                mensagemDeErro(erro)
             );
         }
     };
@@ -176,34 +145,22 @@ function Clientes() {
     /*
      * EXCLUIR CLIENTE
      *
-     * ADICIONADO:
-     * Agora apenas abre o popup de confirmação.
+     * Apenas abre o popup de confirmação.
      */
-    const excluirCliente = (cliente) => {
+    const excluirClienteSelecionado = (cliente) => {
         setClienteExcluindo(cliente);
         setPopupExclusaoAberto(true);
     };
 
     /*
-     * ADICIONADO:
      * EXCLUIR CLIENTE APÓS CONFIRMAÇÃO
      */
     const confirmarExclusao = async () => {
         try {
-            const resposta = await fetch(
-                `http://localhost:3000/api/clientes/${clienteExcluindo.id_cliente}`,
-                {
-                    method: "DELETE"
-                }
+
+            await excluirCliente(
+                clienteExcluindo.id_cliente
             );
-
-            const resultado = await resposta.json();
-
-            if (!resposta.ok) {
-                throw new Error(
-                    resultado.mensagem || "Erro ao excluir cliente."
-                );
-            }
 
             setPopupExclusaoAberto(false);
             setClienteExcluindo(null);
@@ -214,7 +171,7 @@ function Clientes() {
             console.error(erro);
 
             alert(
-                erro.message || "Não foi possível excluir o cliente."
+                mensagemDeErro(erro)
             );
         }
     };
@@ -292,7 +249,7 @@ function Clientes() {
                         <TabelaCliente
                             clientes={clientesDaPagina}
                             onEditar={abrirEdicao}
-                            onExcluir={excluirCliente}
+                            onExcluir={excluirClienteSelecionado}
                         />
 
                         <div className="rodape-tabela">
@@ -358,7 +315,7 @@ function Clientes() {
                 onFechar={fecharPopup}
             />
 
-    
+
             <PopUpConfirmacao
                 aberto={popupExclusaoAberto}
                 titulo="Excluir cliente"
