@@ -36,7 +36,7 @@ function TabelaCliente({ clientes, onEditar, onExcluir }) {
 
                                     <button
                                         className="botao-acao excluir"
-                                        onClick={() => onExcluir(cliente.id_cliente)}
+                                        onClick={() => onExcluir(cliente)}
                                         title="Excluir cliente"
                                     >
                                         🗑
