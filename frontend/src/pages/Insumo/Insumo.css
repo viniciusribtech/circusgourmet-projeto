@@ -1,6 +1,6 @@
 /* Página principal */
 
-.pagina-clientes {
+.pagina-insumos {
     width: 100%;
     max-width: 1200px;
 
@@ -13,7 +13,7 @@
 
 /* Cabeçalho da página */
 
-.cabecalho-clientes {
+.cabecalho-insumos {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
