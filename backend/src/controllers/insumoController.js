@@ -1,6 +1,6 @@
 const insumoService = require('../services/insumoService');
 
-// 1. Listar todos os insumos
+// 1. Listar todos os insumos (uso do _ para ignorar o parâmetro obrigatorio)
 async function listarInsumos(_requisicao, resposta) {
     try {
         const listaDeInsumos = await insumoService.listarInsumos();
@@ -15,7 +15,6 @@ async function buscarInsumos(requisicao, resposta) {
     try {
         const termoPesquisado = requisicao.query.pesquisa;
 
-        // Validação aprimorada da pesquisa
         if (!termoPesquisado || termoPesquisado.trim().length === 0) {
             return resposta.status(400).json({ erro: "O termo de pesquisa não pode estar vazio!" });
         }
@@ -33,7 +32,6 @@ async function cadastrarInsumo(requisicao, resposta) {
         const dadosDoNovoInsumo = requisicao.body;
         const insumoCadastrado = await insumoService.cadastrarInsumo(dadosDoNovoInsumo);
         
-        // Status 201: Created
         return resposta.status(201).json(insumoCadastrado);
     } catch (erroDeValidacao) {
         return resposta.status(400).json({ erro: erroDeValidacao.message });
@@ -49,8 +47,8 @@ async function atualizarInsumo(requisicao, resposta) {
         const insumoAtualizado = await insumoService.atualizarInsumo(idDoInsumo, dadosParaAtualizar);
         return resposta.status(200).json(insumoAtualizado);
     } catch (erroDeValidacao) {
-        // Diferencia se o erro foi de validação (400) ou se o insumo não existe (404)
-        const codigoHttp = erroDeValidacao.message.includes("não encontrado") ? 404 : 400;
+        // Agora lê o status injetado pelo Service (se não houver, assume 400)
+        const codigoHttp = erroDeValidacao.status || 400;
         return resposta.status(codigoHttp).json({ erro: erroDeValidacao.message });
     }
 }
@@ -63,7 +61,7 @@ async function excluirInsumo(requisicao, resposta) {
         
         return resposta.status(200).json(respostaDaExclusao);
     } catch (erroDeValidacao) {
-        const codigoHttp = erroDeValidacao.message.includes("não encontrado") ? 404 : 400;
+        const codigoHttp = erroDeValidacao.status || 400;
         return resposta.status(codigoHttp).json({ erro: erroDeValidacao.message });
     }
 }
