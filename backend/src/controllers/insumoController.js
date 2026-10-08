@@ -1,7 +1,7 @@
 const insumoService = require('../services/insumoService');
 
 // 1. Listar todos os insumos
-async function listarInsumos(requisicao, resposta) {
+async function listarInsumos(_requisicao, resposta) {
     try {
         const listaDeInsumos = await insumoService.listarInsumos();
         return resposta.status(200).json(listaDeInsumos);
