@@ -28,6 +28,7 @@ app.get('/', (req, res) => {
 const clienteRoutes = require('./src/routes/clienteRoutes');
 app.use('/api', clienteRoutes);
 
+// rota do insumo
 const insumoRoutes = require('./src/routes/insumoRoutes');
 app.use('/api', insumoRoutes);
 
