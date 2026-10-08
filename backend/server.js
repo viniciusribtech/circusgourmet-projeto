@@ -28,6 +28,8 @@ app.get('/', (req, res) => {
 const clienteRoutes = require('./src/routes/clienteRoutes');
 app.use('/api', clienteRoutes);
 
+const insumoRoutes = require('./src/routes/insumoRoutes');
+app.use('/api', insumoRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => { 
