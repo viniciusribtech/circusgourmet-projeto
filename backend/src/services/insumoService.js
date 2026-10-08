@@ -1,160 +1,113 @@
-const pool = require('../database/connection');
+const pool = require('../database/connection')
 
-// 1. Listar todos os insumos
-async function listarInsumos() {
-    try {
-        const [rows] = await pool.query(
-            'SELECT id_insumo, nome, custo_unitario FROM Insumo ORDER BY id_insumo DESC'
-        );
-        return rows;
-    } catch (erro) {
-        console.error("Erro ao listar insumos:", erro);
-        throw erro;
+// Função auxiliar interna para validar se o ID é numérico
+function validarId(idDoInsumo) {
+    if (!idDoInsumo || isNaN(idDoInsumo)) {
+        throw new Error("O identificador do insumo informado é inválido.");
     }
 }
 
-// 2. Buscar insumo por termo de pesquisa
-async function buscarInsumos(termo) {
-    if (!termo || termo.trim() === '') {
-        throw new Error('Preencha a barra de pesquisa!');
-    }
+// 1. Listar todos
+async function listarInsumos() {
+    const [listaDeInsumos] = await pool.query('SELECT id_insumo, nome, custo_unitario FROM Insumo');
+    return listaDeInsumos;
+}
 
-    try {
-        let rows = [];
-        const termoNumerico = parseFloat(termo);
-
-        // Se for um número válido, pesquisa por custo unitário
-        if (!isNaN(termoNumerico)) {
-            const query = 'SELECT id_insumo, nome, custo_unitario FROM Insumo WHERE custo_unitario = ?';
-            [rows] = await pool.query(query, [termoNumerico]);
-        } else {
-            // Se não for número, pesquisa por nome
-            const query = 'SELECT id_insumo, nome, custo_unitario FROM Insumo WHERE nome LIKE ?';
-            const wildcard = `%${termo}%`;
-            [rows] = await pool.query(query, [wildcard]);
-        }
-
-        if (rows.length === 0) {
-            throw new Error('Resultados não encontrados!');
-        }
-
-        return rows;
-    } catch (erro) {
-        console.error("Erro ao buscar insumos:", erro);
-        throw erro;
-    }
+// 2. Buscar por nome
+async function buscarInsumos(termoPesquisado) {
+    const [resultadosDaBusca] = await pool.query(
+        'SELECT id_insumo, nome, custo_unitario FROM Insumo WHERE nome LIKE ?',
+        [`%${termoPesquisado}%`]
+    );
+    return resultadosDaBusca;
 }
 
 // 3. Cadastrar Insumo
-async function cadastrarInsumo(dados) {
-    const { nome, custo_unitario } = dados;
+async function cadastrarInsumo(dadosDoInsumo) {
+    const { nome, custo_unitario } = dadosDoInsumo;
 
-    if (!nome || custo_unitario === undefined || custo_unitario === null) {
+    if (!nome || typeof nome !== 'string' || nome.trim() === '') {
         throw new Error("Campos obrigatórios não preenchidos!");
     }
 
     const custoValidado = parseFloat(custo_unitario);
     if (isNaN(custoValidado) || custoValidado < 0) {
-        throw new Error("Formato inválido!");
+        throw new Error("Campos obrigatórios não preenchidos!");
     }
 
-    try {
-        // Verifica duplicidade de nome (Aqui é pelo documento de especificação de requisitos)
-        const [insumoExistente] = await pool.query(
-            'SELECT id_insumo FROM Insumo WHERE nome = ?',
-            [nome]
-        );
+    const [insumoExistente] = await pool.query(
+        'SELECT id_insumo FROM Insumo WHERE nome = ?',
+        [nome.trim()]
+    );
 
-        if (insumoExistente.length > 0) {
-            throw new Error("Insumo já cadastrado!");
-        }
-
-        const query = 'INSERT INTO Insumo (nome, custo_unitario) VALUES (?, ?)';
-        const [resultado] = await pool.query(query, [nome, custoValidado]);
-
-        return {
-            id_insumo: resultado.insertId,
-            nome,
-            custo_unitario: custoValidado
-        };
-    } catch (erro) {
-        console.error("Erro ao cadastrar insumo:", erro);
-        throw erro;
+    if (insumoExistente.length > 0) {
+        throw new Error("Já existe um insumo cadastrado com este nome!");
     }
+
+    const [resultadoDoBanco] = await pool.query(
+        'INSERT INTO Insumo (nome, custo_unitario) VALUES (?, ?)',
+        [nome.trim(), custoValidado]
+    );
+
+    return {
+        mensagem: "Insumo cadastrado com sucesso!",
+        idInsumoGerado: resultadoDoBanco.insertId
+    };
 }
 
 // 4. Atualizar Insumo
-async function atualizarInsumo(id, dados) {
-    const { nome, custo_unitario } = dados;
+async function atualizarInsumo(idDoInsumo, dadosDoInsumo) {
+    validarId(idDoInsumo);
 
-    if (!nome || custo_unitario === undefined || custo_unitario === null) {
-        throw new Error("Campos obrigatórios não preenchidos!");
+    const { nome, custo_unitario } = dadosDoInsumo;
+
+    if (!nome || typeof nome !== 'string' || nome.trim() === '') {
+        throw new Error("O nome do insumo é obrigatório para a atualização!");
     }
 
     const custoValidado = parseFloat(custo_unitario);
     if (isNaN(custoValidado) || custoValidado < 0) {
-        throw new Error("Formato inválido!");
+        throw new Error("O custo unitário deve ser numérico e positivo!");
     }
 
-    try {
-        // Verifica se o insumo existe
-        const [insumoAtual] = await pool.query(
-            'SELECT id_insumo FROM Insumo WHERE id_insumo = ?',
-            [id]
-        );
+    const [resultadoDoBanco] = await pool.query(
+        'UPDATE Insumo SET nome = ?, custo_unitario = ? WHERE id_insumo = ?',
+        [nome.trim(), custoValidado, idDoInsumo]
+    );
 
-        if (insumoAtual.length === 0) {
-            throw new Error("Sem resultados para esse insumo!");
-        }
-
-        // Verifica conflito de nome (se o nome já pertence a OUTRO id_insumo)
-        const [insumoComMesmoNome] = await pool.query(
-            'SELECT id_insumo FROM Insumo WHERE nome = ? AND id_insumo != ?',
-            [nome, id]
-        );
-
-        if (insumoComMesmoNome.length > 0) {
-            throw new Error("Insumo já cadastrado!");
-        }
-
-        const query = 'UPDATE Insumo SET nome = ?, custo_unitario = ? WHERE id_insumo = ?';
-        await pool.query(query, [nome, custoValidado, id]);
-
-        return {
-            id_insumo: id,
-            nome,
-            custo_unitario: custoValidado
-        };
-    } catch (erro) {
-        console.error("Erro ao atualizar insumo:", erro);
-        throw erro;
+    if (resultadoDoBanco.affectedRows === 0) {
+        throw new Error("Insumo não encontrado para atualização!");
     }
+
+    return {
+        mensagem: "Insumo atualizado com sucesso!"
+    };
 }
 
 // 5. Excluir Insumo
-async function excluirInsumo(id) {
+async function excluirInsumo(idDoInsumo) {
+    validarId(idDoInsumo);
+
     try {
-        const [resultado] = await pool.query(
+        const [resultadoDoBanco] = await pool.query(
             'DELETE FROM Insumo WHERE id_insumo = ?',
-            [id]
+            [idDoInsumo]
         );
 
-        // Se nenhuma linha foi afetada, o id não existia
-        if (resultado.affectedRows === 0) {
-            throw new Error("Sem resultados para esse insumo!");
+        if (resultadoDoBanco.affectedRows === 0) {
+            throw new Error("Insumo não encontrado para exclusão!");
         }
 
         return {
             mensagem: "Insumo excluído com sucesso!"
         };
-    } catch (erro) {
-        // Captura o erro específico de chave estrangeira do MySQL
-        if (erro.code === 'ER_ROW_IS_REFERENCED_2' || erro.message.includes('foreign key constraint fails')) {
+    } catch (erroDoBanco) {
+        // Captura o erro específico de chave estrangeira (nativo do motor MySQL)
+        if (erroDoBanco.code === 'ER_ROW_IS_REFERENCED_2' || erroDoBanco.message.includes('foreign key constraint fails')) {
             throw new Error("Não é possível excluir este insumo, pois ele está vinculado a um ou mais serviços!");
         }
-
-        console.error("Erro ao excluir insumo:", erro);
-        throw erro;
+        // Repassa qualquer outro erro não previsto
+        throw erroDoBanco;
     }
 }
 
