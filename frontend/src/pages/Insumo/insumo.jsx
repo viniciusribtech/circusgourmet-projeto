@@ -4,24 +4,24 @@ import Navbar from "../../components/BarraNav/navbar.jsx";
 import CabecalhoPagina from "../../components/CabecalhoPagina/cabecalhoPagina.jsx";
 import Botao from "../../components/Botao/botao.jsx";
 import CampoPesquisa from "../../components/CampoPesquisa/campoPesquisa.jsx";
-import TabelaCliente from "../../components/TabelaCliente/tabelaCliente.jsx";
+import TabelaInsumo from "../../components/TabelaInsumo/tabelaInsumo.jsx";
 import Paginacao from "../../components/Paginacao/paginacao.jsx";
 import PopUpFormulario from "../../components/PopUpFormulario/popUpFormulario.jsx";
 import PopUpConfirmacao from "../../components/PopUpConfirmacao/popUpConfirmacao.jsx";
 
 import {
-    listarClientes,
-    buscarClientes,
-    cadastrarCliente,
-    atualizarCliente,
-    excluirCliente,
+    listarInsumos,
+    buscarInsumos,
+    cadastrarInsumo,
+    atualizarInsumo,
+    excluirInsumo,
     mensagemDeErro
-} from "../../services/clienteService.js";
+} from "../../services/insumoService.js";
 
-import "./cliente.css";
+import "./insumo.css";
 
-function Clientes() {
-    const [clientes, setClientes] = useState([]);
+function Insumos() {
+    const [insumos, setInsumos] = useState([]);
 
     const [termo, setTermo] = useState("");
     const [carregando, setCarregando] = useState(true);
@@ -30,24 +30,24 @@ function Clientes() {
     const [paginaAtual, setPaginaAtual] = useState(1);
 
     const [popupAberto, setPopupAberto] = useState(false);
-    const [clienteEditando, setClienteEditando] = useState(null);
+    const [insumoEditando, setInsumoEditando] = useState(null);
 
     const [popupExclusaoAberto, setPopupExclusaoAberto] = useState(false);
-    const [clienteExcluindo, setClienteExcluindo] = useState(null);
+    const [insumoExcluindo, setInsumoExcluindo] = useState(null);
 
-    const clientesPorPagina = 4;
+    const insumosPorPagina = 4;
 
     /*
-     * BUSCAR TODOS OS CLIENTES
+     * BUSCAR TODOS OS INSUMOS
      */
-    const carregarClientes = async () => {
+    const carregarInsumos = async () => {
         try {
             setCarregando(true);
             setErro("");
 
-            const dados = await listarClientes();
+            const dados = await listarInsumos();
 
-            setClientes(dados);
+            setInsumos(dados);
             setPaginaAtual(1);
 
         } catch (erro) {
@@ -59,28 +59,28 @@ function Clientes() {
     };
 
     /*
-     * CARREGAR CLIENTES QUANDO A PÁGINA ABRIR
+     * CARREGAR INSUMOS QUANDO A PÁGINA ABRIR
      */
     useEffect(() => {
-        carregarClientes();
+        carregarInsumos();
     }, []);
 
     /*
-     * PESQUISAR CLIENTES
+     * PESQUISAR INSUMOS
      */
-    const pesquisarClientes = async () => {
+    const pesquisarInsumos = async () => {
         try {
             setCarregando(true);
             setErro("");
 
             if (termo.trim() === "") {
-                await carregarClientes();
+                await carregarInsumos();
                 return;
             }
 
-            const dados = await buscarClientes(termo);
+            const dados = await buscarInsumos(termo);
 
-            setClientes(dados);
+            setInsumos(dados);
             setPaginaAtual(1);
 
         } catch (erro) {
@@ -92,18 +92,18 @@ function Clientes() {
     };
 
     /*
-     * ABRIR POP-UP PARA NOVO CLIENTE
+     * ABRIR POP-UP PARA NOVO INSUMO
      */
     const abrirCadastro = () => {
-        setClienteEditando(null);
+        setInsumoEditando(null);
         setPopupAberto(true);
     };
 
     /*
-     * ABRIR POP-UP PARA EDITAR CLIENTE
+     * ABRIR POP-UP PARA EDITAR INSUMO
      */
-    const abrirEdicao = (cliente) => {
-        setClienteEditando(cliente);
+    const abrirEdicao = (insumo) => {
+        setInsumoEditando(insumo);
         setPopupAberto(true);
     };
 
@@ -112,26 +112,26 @@ function Clientes() {
      */
     const fecharPopup = () => {
         setPopupAberto(false);
-        setClienteEditando(null);
+        setInsumoEditando(null);
     };
 
     /*
-     * CADASTRAR OU EDITAR CLIENTE
+     * CADASTRAR OU EDITAR INSUMO
      */
-    const salvarCliente = async (dados) => {
+    const salvarInsumo = async (dados) => {
         try {
 
-            if (clienteEditando) {
-                await atualizarCliente(
-                    clienteEditando.id_cliente,
+            if (insumoEditando) {
+                await atualizarInsumo(
+                    insumoEditando.id_insumo,
                     dados
                 );
             } else {
-                await cadastrarCliente(dados);
+                await cadastrarInsumo(dados);
             }
 
             fecharPopup();
-            await carregarClientes();
+            await carregarInsumos();
 
         } catch (erro) {
             console.error(erro);
@@ -143,29 +143,29 @@ function Clientes() {
     };
 
     /*
-     * EXCLUIR CLIENTE
+     * EXCLUIR INSUMO
      *
      * Apenas abre o popup de confirmação.
      */
-    const excluirClienteSelecionado = (cliente) => {
-        setClienteExcluindo(cliente);
+    const excluirInsumoSelecionado = (insumo) => {
+        setInsumoExcluindo(insumo);
         setPopupExclusaoAberto(true);
     };
 
     /*
-     * EXCLUIR CLIENTE APÓS CONFIRMAÇÃO
+     * EXCLUIR INSUMO APÓS CONFIRMAÇÃO
      */
     const confirmarExclusao = async () => {
         try {
 
-            await excluirCliente(
-                clienteExcluindo.id_cliente
+            await excluirInsumo(
+                insumoExcluindo.id_insumo
             );
 
             setPopupExclusaoAberto(false);
-            setClienteExcluindo(null);
+            setInsumoExcluindo(null);
 
-            await carregarClientes();
+            await carregarInsumos();
 
         } catch (erro) {
             console.error(erro);
@@ -180,15 +180,15 @@ function Clientes() {
      * PAGINAÇÃO
      */
     const totalPaginas = Math.ceil(
-        clientes.length / clientesPorPagina
+        insumos.length / insumosPorPagina
     );
 
     const indiceInicial =
-        (paginaAtual - 1) * clientesPorPagina;
+        (paginaAtual - 1) * insumosPorPagina;
 
-    const clientesDaPagina = clientes.slice(
+    const insumosDaPagina = insumos.slice(
         indiceInicial,
-        indiceInicial + clientesPorPagina
+        indiceInicial + insumosPorPagina
     );
 
     const mudarPagina = (pagina) => {
@@ -203,17 +203,17 @@ function Clientes() {
         <>
             <Navbar />
 
-            <main className="pagina-clientes">
+            <main className="pagina-insumos">
 
-                <div className="cabecalho-clientes">
+                <div className="cabecalho-insumos">
 
                     <CabecalhoPagina
-                        titulo="Gestão de Clientes"
-                        subtitulo="Visualize, edite e gerencie sua base de clientes cadastrados."
+                        titulo="Controle de Insumos"
+                        subtitulo="Gerencie seus insumos e custos."
                     />
 
                     <Botao onClick={abrirCadastro}>
-                        Novo Cliente
+                        Novo Insumo
                     </Botao>
 
                 </div>
@@ -224,8 +224,8 @@ function Clientes() {
                     <CampoPesquisa
                         valor={termo}
                         onChange={setTermo}
-                        onPesquisar={pesquisarClientes}
-                        placeholder="Pesquisar por nome ou telefone..."
+                        onPesquisar={pesquisarInsumos}
+                        placeholder="Pesquisar por nome..."
                     />
 
                 </div>
@@ -234,7 +234,7 @@ function Clientes() {
                 {carregando ? (
 
                     <div className="mensagem-tabela">
-                        Carregando clientes...
+                        Carregando insumos...
                     </div>
 
                 ) : erro ? (
@@ -246,25 +246,25 @@ function Clientes() {
                 ) : (
 
                     <>
-                        <TabelaCliente
-                            clientes={clientesDaPagina}
+                        <TabelaInsumo
+                            insumos={insumosDaPagina}
                             onEditar={abrirEdicao}
-                            onExcluir={excluirClienteSelecionado}
+                            onExcluir={excluirInsumoSelecionado}
                         />
 
                         <div className="rodape-tabela">
 
                             <span>
                                 Exibindo{" "}
-                                {clientes.length === 0
+                                {insumos.length === 0
                                     ? 0
                                     : indiceInicial + 1}
                                 -
                                 {Math.min(
-                                    indiceInicial + clientesPorPagina,
-                                    clientes.length
+                                    indiceInicial + insumosPorPagina,
+                                    insumos.length
                                 )}{" "}
-                                de {clientes.length} clientes
+                                de {insumos.length} insumos
                             </span>
 
                             <Paginacao
@@ -284,45 +284,45 @@ function Clientes() {
             <PopUpFormulario
                 aberto={popupAberto}
                 titulo={
-                    clienteEditando
-                        ? "Editar Cliente"
-                        : "Novo Cliente"
+                    insumoEditando
+                        ? "Editar Insumo"
+                        : "Cadastro de Insumo"
                 }
                 subtitulo={
-                    clienteEditando
-                        ? "Edite os dados do cliente."
-                        : "Cadastre os detalhes do cliente para iniciar o atendimento gourmet."
+                    insumoEditando
+                        ? "Edite os dados do insumo."
+                        : "Preencha as informações técnicas do novo insumo gourmet para o seu inventário."
                 }
-                cliente={clienteEditando}
+                cliente={insumoEditando}
                 campos={[
                     {
                         nome: "nome",
-                        label: "Nome",
-                        placeholder: "Ex: Carlos"
+                        label: "Nome do insumo",
+                        placeholder: "Nome do insumo"
                     },
                     {
-                        nome: "telefone",
-                        label: "Telefone",
-                        placeholder: "(11) 99999-9999"
+                        nome: "custo_unitario",
+                        label: "Custo unitário (R$)",
+                        placeholder: "0,00"
                     }
                 ]}
-                onSalvar={salvarCliente}
+                onSalvar={salvarInsumo}
                 onFechar={fecharPopup}
             />
 
 
             <PopUpConfirmacao
                 aberto={popupExclusaoAberto}
-                titulo="Excluir cliente"
+                titulo="Excluir insumo"
                 mensagem={
-                    clienteExcluindo
-                        ? `Deseja realmente excluir o cliente "${clienteExcluindo.nome}"?`
+                    insumoExcluindo
+                        ? `Deseja realmente excluir o insumo "${insumoExcluindo.nome}"?`
                         : ""
                 }
                 onConfirmar={confirmarExclusao}
                 onFechar={() => {
                     setPopupExclusaoAberto(false);
-                    setClienteExcluindo(null);
+                    setInsumoExcluindo(null);
                 }}
             />
 
@@ -330,4 +330,4 @@ function Clientes() {
     );
 }
 
-export default Clientes;
+export default Insumos;
