@@ -1,74 +1,56 @@
-import axios from 'axios';
+import axios from "axios";
 
-// Utiliza o padrão existente no projeto para a URL base
-const API_URL = 'http://localhost:3000/api/insumos';
+const api = axios.create({
+    baseURL: import.meta.env.VITE_API_URL || "http://localhost:3000/api",
+    headers: { "Content-Type": "application/json" }
+});
 
-// Tratamento de erros compatível com o backend (lê 'erro' ou 'mensagem')
-const mensagemDeErro = (erro) => {
-    if (erro.response && erro.response.data) {
-        return erro.response.data.erro || erro.response.data.mensagem || "Erro inesperado ao processar a requisição.";
-    }
-    if (erro.message === "Network Error") {
-        return "Falha de conexão com o servidor. Verifique se o backend está ativo.";
-    }
-    return erro.message;
-};
+export async function listarInsumos() {
+    const resposta = await api.get("/insumos");
+    return resposta.data;
+}
 
-export const listarInsumos = async () => {
-    try {
-        const resposta = await axios.get(API_URL);
-        return resposta.data;
-    } catch (erro) {
-        throw new Error(mensagemDeErro(erro));
-    }
-};
 
-export const buscarInsumos = async (termo) => {
-    try {
-        // Resolve a incompatibilidade: frontend usa 'termo', backend espera 'pesquisa'
-        const resposta = await axios.get(`${API_URL}/buscar`, { params: { pesquisa: termo } });
-        return resposta.data;
-    } catch (erro) {
-        throw new Error(mensagemDeErro(erro));
-    }
-};
+export async function buscarInsumos(termoPesquisado) {
+    const termo = String(termoPesquisado ?? "").trim();
+    if (!termo) return listarInsumos();
+    const resposta = await api.get("/insumos/buscar", { params: { pesquisa: termo } });
+    return resposta.data;
+}
 
-export const cadastrarInsumo = async (dadosInsumo) => {
-    try {
-        // Tratamento para garantir que o custo_unitario seja numérico caso venha com vírgula do input
-        const dadosFormatados = {
-            ...dadosInsumo,
-            custo_unitario: typeof dadosInsumo.custo_unitario === 'string' 
-                ? parseFloat(dadosInsumo.custo_unitario.replace(',', '.')) 
-                : dadosInsumo.custo_unitario
-        };
-        const resposta = await axios.post(API_URL, dadosFormatados);
-        return resposta.data;
-    } catch (erro) {
-        throw new Error(mensagemDeErro(erro));
-    }
-};
+function prepararDadosDoInsumo(dadosDoInsumo) {
+    const nome = String(dadosDoInsumo.nome ?? "").trim();
+    const custoDigitado = String(dadosDoInsumo.custo_unitario ?? "").trim();
+    const custoNormalizado = custoDigitado.replace(",", ".");
+    const custoUnitario = Number(custoNormalizado);
 
-export const atualizarInsumo = async (id_insumo, dadosInsumo) => {
-    try {
-        const dadosFormatados = {
-            ...dadosInsumo,
-            custo_unitario: typeof dadosInsumo.custo_unitario === 'string' 
-                ? parseFloat(dadosInsumo.custo_unitario.replace(',', '.')) 
-                : dadosInsumo.custo_unitario
-        };
-        const resposta = await axios.put(`${API_URL}/${id_insumo}`, dadosFormatados);
-        return resposta.data;
-    } catch (erro) {
-        throw new Error(mensagemDeErro(erro));
+    if (!nome) throw new Error("O nome do insumo é obrigatório!");
+    if (!custoDigitado || !Number.isFinite(custoUnitario) || custoUnitario < 0) {
+        throw new Error("Informe um custo unitário válido e não negativo.");
     }
-};
+    return { nome, custo_unitario: custoUnitario };
+}
 
-export const excluirInsumo = async (id_insumo) => {
-    try {
-        const resposta = await axios.delete(`${API_URL}/${id_insumo}`);
-        return resposta.data;
-    } catch (erro) {
-        throw new Error(mensagemDeErro(erro));
-    }
-};
+export async function cadastrarInsumo(dadosDoInsumo) {
+    const dadosValidados = prepararDadosDoInsumo(dadosDoInsumo);
+    const resposta = await api.post("/insumos", dadosValidados);
+    return resposta.data;
+}
+
+export async function atualizarInsumo(idDoInsumo, dadosDoInsumo) {
+    const dadosValidados = prepararDadosDoInsumo(dadosDoInsumo);
+    const resposta = await api.put(`/insumos/${idDoInsumo}`, dadosValidados);
+    return resposta.data;
+}
+
+export async function excluirInsumo(idDoInsumo) {
+    const resposta = await api.delete(`/insumos/${idDoInsumo}`);
+    return resposta.data;
+}
+
+export function mensagemDeErro(erro) {
+    return erro?.response?.data?.erro ||
+        erro?.response?.data?.mensagem ||
+        erro?.message ||
+        "Não foi possível conectar ao servidor.";
+}
