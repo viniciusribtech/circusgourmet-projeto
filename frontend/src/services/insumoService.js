@@ -1,109 +1,74 @@
-// frontend/src/services/insumoService.js
-//
-// MOCK do serviço de insumos — apenas para testar a página de Insumos
-// enquanto o back-end real não está pronto.
+import axios from 'axios';
 
-// "Banco de dados" em memória
-let insumosMock = [
-  { id_insumo: 1, nome: "Leite Condensado", custo_unitario: 40.00 },
-  { id_insumo: 2, nome: "Granola", custo_unitario: 3.50 },
-  { id_insumo: 3, nome: "Morango", custo_unitario: 1.50 },
-  { id_insumo: 4, nome: "Vodka", custo_unitario: 2.00 },
-  { id_insumo: 5, nome: "Leite", custo_unitario: 1.50 },
-  { id_insumo: 6, nome: "Chocolate", custo_unitario: 2.50 },
-  { id_insumo: 7, nome: "Refrigerante", custo_unitario: 4.00 },
-  { id_insumo: 8, nome: "Queijo", custo_unitario: 5.00 },
-  { id_insumo: 9, nome: "Presunto", custo_unitario: 3.00 },
-  { id_insumo: 10, nome: "Café", custo_unitario: 6.00 },
-];
+// Utiliza o padrão existente no projeto para a URL base
+const API_URL = 'http://localhost:3000/api/insumos';
 
-let proximoId = 11;
+// Tratamento de erros compatível com o backend (lê 'erro' ou 'mensagem')
+const mensagemDeErro = (erro) => {
+    if (erro.response && erro.response.data) {
+        return erro.response.data.erro || erro.response.data.mensagem || "Erro inesperado ao processar a requisição.";
+    }
+    if (erro.message === "Network Error") {
+        return "Falha de conexão com o servidor. Verifique se o backend está ativo.";
+    }
+    return erro.message;
+};
 
-// Simula o tempo de resposta de uma requisição HTTP
-const delay = (ms = 400) => new Promise((resolve) => setTimeout(resolve, ms));
+export const listarInsumos = async () => {
+    try {
+        const resposta = await axios.get(API_URL);
+        return resposta.data;
+    } catch (erro) {
+        throw new Error(mensagemDeErro(erro));
+    }
+};
 
-// Simula erros ocasionais (opcional - remova se quiser)
-const simularErro = false; // coloque true para testar mensagens de erro
+export const buscarInsumos = async (termo) => {
+    try {
+        // Resolve a incompatibilidade: frontend usa 'termo', backend espera 'pesquisa'
+        const resposta = await axios.get(`${API_URL}/buscar`, { params: { pesquisa: termo } });
+        return resposta.data;
+    } catch (erro) {
+        throw new Error(mensagemDeErro(erro));
+    }
+};
 
-// GET /api/insumos
-export async function listarInsumos() {
-  await delay();
-  if (simularErro) throw new Error("Erro simulado");
-  // Retorna em ordem decrescente (como o backend real faria)
-  return [...insumosMock].sort((a, b) => b.id_insumo - a.id_insumo);
-}
+export const cadastrarInsumo = async (dadosInsumo) => {
+    try {
+        // Tratamento para garantir que o custo_unitario seja numérico caso venha com vírgula do input
+        const dadosFormatados = {
+            ...dadosInsumo,
+            custo_unitario: typeof dadosInsumo.custo_unitario === 'string' 
+                ? parseFloat(dadosInsumo.custo_unitario.replace(',', '.')) 
+                : dadosInsumo.custo_unitario
+        };
+        const resposta = await axios.post(API_URL, dadosFormatados);
+        return resposta.data;
+    } catch (erro) {
+        throw new Error(mensagemDeErro(erro));
+    }
+};
 
-// GET /api/insumos/buscar?termo=...
-export async function buscarInsumos(termo) {
-  await delay();
-  if (simularErro) throw new Error("Erro simulado");
-  const termoLower = String(termo || "").toLowerCase();
-  return insumosMock
-    .filter((i) => i.nome.toLowerCase().includes(termoLower))
-    .sort((a, b) => b.id_insumo - a.id_insumo);
-}
+export const atualizarInsumo = async (id_insumo, dadosInsumo) => {
+    try {
+        const dadosFormatados = {
+            ...dadosInsumo,
+            custo_unitario: typeof dadosInsumo.custo_unitario === 'string' 
+                ? parseFloat(dadosInsumo.custo_unitario.replace(',', '.')) 
+                : dadosInsumo.custo_unitario
+        };
+        const resposta = await axios.put(`${API_URL}/${id_insumo}`, dadosFormatados);
+        return resposta.data;
+    } catch (erro) {
+        throw new Error(mensagemDeErro(erro));
+    }
+};
 
-// POST /api/insumos
-export async function cadastrarInsumo(dados) {
-  await delay();
-  if (!dados.nome || !dados.custo_unitario) {
-    throw new Error("Campos obrigatórios não preenchidos!");
-  }
-
-  const novo = {
-    id_insumo: proximoId++,
-    nome: dados.nome,
-    custo_unitario: Number(dados.custo_unitario),
-  };
-
-  insumosMock.push(novo);
-  return novo;
-}
-
-// PUT /api/insumos/:id
-export async function atualizarInsumo(id, dados) {
-  await delay();
-  if (!dados.nome || !dados.custo_unitario) {
-    throw new Error("Campos obrigatórios não preenchidos!");
-  }
-
-  const index = insumosMock.findIndex(
-    (i) => i.id_insumo === Number(id)
-  );
-
-  if (index === -1) {
-    throw new Error("Insumo não encontrado!");
-  }
-
-  insumosMock[index] = {
-    id_insumo: Number(id),
-    nome: dados.nome,
-    custo_unitario: Number(dados.custo_unitario),
-  };
-
-  return insumosMock[index];
-}
-
-// DELETE /api/insumos/:id
-export async function excluirInsumo(id) {
-  await delay();
-  const index = insumosMock.findIndex(
-    (i) => i.id_insumo === Number(id)
-  );
-
-  if (index === -1) {
-    throw new Error("Item já excluído ou não encontrado!");
-  }
-
-  insumosMock.splice(index, 1);
-  return { mensagem: "Insumo excluído com sucesso!" };
-}
-
-// Mensagem de erro (mesma assinatura do clienteService real)
-export function mensagemDeErro(erro) {
-  return (
-    erro?.response?.data?.mensagem ||
-    erro?.message ||
-    "Não foi possível conectar ao servidor."
-  );
-}
+export const excluirInsumo = async (id_insumo) => {
+    try {
+        const resposta = await axios.delete(`${API_URL}/${id_insumo}`);
+        return resposta.data;
+    } catch (erro) {
+        throw new Error(mensagemDeErro(erro));
+    }
+};
