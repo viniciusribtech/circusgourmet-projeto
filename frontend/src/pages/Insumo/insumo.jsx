@@ -299,11 +299,13 @@ function Insumos() {
                         nome: "nome",
                         label: "Nome do insumo",
                         placeholder: "Nome do insumo"
+                        tamanhoMaximo: 30
                     },
                     {
                         nome: "custo_unitario",
                         label: "Custo unitário (R$)",
                         placeholder: "0,00"
+                        tamanhoMaximo: 5
                     }
                 ]}
                 onSalvar={salvarInsumo}
