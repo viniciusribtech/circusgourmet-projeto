@@ -64,7 +64,6 @@ function PopUpFormulario({
                         className="popup-fechar"
                         onClick={onFechar}
                     >
-                        ×
                     </button>
                 </div>
 
@@ -94,6 +93,7 @@ function PopUpFormulario({
                                     )
                                 }
                                 placeholder={campo.placeholder}
+                                maxLength={campo.tamanhoMaximo}
                                 required
                             />
                         </div>

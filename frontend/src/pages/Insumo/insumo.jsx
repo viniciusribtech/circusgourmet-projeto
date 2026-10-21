@@ -249,30 +249,35 @@ const limparPesquisa = async () => {
         )}
       </main>
 
-      <PopUpFormulario
-        aberto={popupAberto}
-        titulo={insumoEditando ? "Editar Insumo" : "Cadastro de Insumo"}
-        subtitulo={
-          insumoEditando
-            ? "Edite os dados do insumo."
-            : "Preencha as informações técnicas do novo insumo gourmet para o seu inventário."
-        }
-        cliente={insumoEditando}
-        campos={[
-          {
-            nome: "nome",
-            label: "Nome do insumo",
-            placeholder: "Nome do insumo",
-          },
-          {
-            nome: "custo_unitario",
-            label: "Custo unitário (R$)",
-            placeholder: "0,00",
-          },
-        ]}
-        onSalvar={salvarInsumo}
-        onFechar={fecharPopup}
-      />
+            <PopUpFormulario
+                aberto={popupAberto}
+                titulo={
+                    insumoEditando
+                        ? "Editar Insumo"
+                        : "Cadastro de Insumo"
+                }
+                subtitulo={
+                    insumoEditando
+                        ? "Edite os dados do insumo."
+                        : "Preencha as informações técnicas do novo insumo gourmet para o seu inventário."
+                }
+                cliente={insumoEditando}
+                campos={[
+                    {
+                        nome: "nome",
+                        label: "Nome do insumo",
+                        placeholder: "Nome do insumo"
+                    },
+                    {
+                        nome: "custo_unitario",
+                        label: "Custo unitário (R$)",
+                        placeholder: "0,00"
+                    }
+                ]}
+                onSalvar={salvarInsumo}
+                onFechar={fecharPopup}
+            />
+
 
       <PopUpConfirmacao
         aberto={popupExclusaoAberto}

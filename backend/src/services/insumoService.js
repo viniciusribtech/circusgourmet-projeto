@@ -1,5 +1,8 @@
 const pool = require('../database/connection');
 
+const TAMANHO_MAXIMO_NOME = 30;
+const CUSTO_MAXIMO = 99.99;
+
 // Função auxiliar interna para validar se o ID é numérico
 function validarId(idDoInsumo) {
     const identificadorNumerico = Number(idDoInsumo);
@@ -43,6 +46,7 @@ async function cadastrarInsumo(dadosDoInsumo) {
     }
 
     // Verifica se já existe um insumo com o mesmo nome
+    validarLimitesDoBanco(nome.trim(), custoValidado);
     const [insumoExistente] = await pool.query(
         'SELECT id_insumo FROM Insumo WHERE nome = ?',
         [nome.trim()]
@@ -78,7 +82,7 @@ async function atualizarInsumo(idDoInsumo, dadosDoInsumo) {
     if (!Number.isFinite(custoValidado) || custoValidado < 0) {
         throw new Error("O custo unitário deve ser um número e não pode ser negativo!");
     }
-
+    validarLimitesDoBanco(nome.trim(), custoValidado);
     // Verifica se outro insumo já possui esse nome
     const [insumoExistente] = await pool.query(
         'SELECT id_insumo FROM Insumo WHERE nome = ? AND id_insumo <> ?',
@@ -95,9 +99,16 @@ async function atualizarInsumo(idDoInsumo, dadosDoInsumo) {
     );
 
     if (resultadoDoBanco.affectedRows === 0) {
+        const [verificacaoInsumo] = await pool.query(
+            'SELECT id_insumo FROM Insumo WHERE id_insumo = ?',
+            [idDoInsumo]
+        );
+
+        if (verificacaoInsumo.length === 0) {
         const erro = new Error("Insumo não encontrado para atualização!");
-        erro.status = 404;
-        throw erro;
+            erro.status = 404;
+            throw erro;
+        }
     }
 
     return {
