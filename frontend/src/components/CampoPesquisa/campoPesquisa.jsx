@@ -1,13 +1,20 @@
+
 import "./campoPesquisa.css";
 
 function CampoPesquisa({
     valor,
     onChange,
     onPesquisar,
+    onLimpar,
     placeholder = "Pesquisar..."
 }) {
+    const handleSubmit = (evento) => {
+        evento.preventDefault();
+        onPesquisar();
+    };
+
     return (
-        <div className="campo-pesquisa">
+        <form className="campo-pesquisa" onSubmit={handleSubmit}>
             <input
                 type="text"
                 value={valor}
@@ -15,10 +22,20 @@ function CampoPesquisa({
                 placeholder={placeholder}
             />
 
-            <button onClick={onPesquisar}>
+            <button type="submit">
                 Pesquisar
             </button>
-        </div>
+
+            {onLimpar && (
+                <button
+                    type="button"
+                    onClick={onLimpar}
+                    className="botao-limpar-pesquisa"
+                >
+                    Limpar pesquisa
+                </button>
+            )}
+        </form>
     );
 }
 

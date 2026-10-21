@@ -43,30 +43,29 @@ async function buscarClientes(termo) {
 
 // 3. Cadastrar Cliente
 async function cadastrarCliente(dados) {
-    const { nome, telefone } = dados;
+    const nome = String(dados.nome ?? "").trim();
+    const telefone = String(dados.telefone ?? "").trim();
 
-    // Validação de campos obrigatórios
     if (!nome || !telefone) {
         throw new Error("Campos obrigatórios não preenchidos!");
     }
 
     try {
         const query = `
-            INSERT INTO Cliente (nome, telefone) 
+            INSERT INTO Cliente (nome, telefone)
             VALUES (?, ?)
         `;
 
-        const [resultado] = await pool.query(
-            query,
-            [nome, telefone]
-        );
-        
+        const [resultado] = await pool.query(query, [
+            nome,
+            telefone
+        ]);
+
         return {
             id_cliente: resultado.insertId,
             nome,
             telefone
         };
-
     } catch (erro) {
         console.error("Erro ao cadastrar cliente:", erro);
         throw erro;
@@ -74,9 +73,11 @@ async function cadastrarCliente(dados) {
 }
 
 
+
 // 4. Atualizar Cliente
 async function atualizarCliente(id, dados) {
-    const { nome, telefone } = dados;
+    const nome = String(dados.nome ?? "").trim();
+    const telefone = String(dados.telefone ?? "").trim();
 
     if (!nome || !telefone) {
         throw new Error("Campos obrigatórios não preenchidos!");
@@ -84,31 +85,41 @@ async function atualizarCliente(id, dados) {
 
     try {
         const query = `
-            UPDATE Cliente 
-            SET nome = ?, telefone = ? 
+            UPDATE Cliente
+            SET nome = ?, telefone = ?
             WHERE id_cliente = ?
         `;
 
-        const [resultado] = await pool.query(
-            query,
-            [nome, telefone, id]
-        );
+        const [resultado] = await pool.query(query, [
+            nome,
+            telefone,
+            id
+        ]);
 
         if (resultado.affectedRows === 0) {
-            throw new Error("Cliente não encontrado!");
+            // O MySQL pode retornar zero quando os dados
+            // são iguais aos que já estavam cadastrados.
+            const [clientes] = await pool.query(
+                "SELECT id_cliente FROM Cliente WHERE id_cliente = ?",
+                [id]
+            );
+
+            if (clientes.length === 0) {
+                throw new Error("Cliente não encontrado!");
+            }
         }
 
         return {
-            id_cliente: id,
+            id_cliente: Number(id),
             nome,
             telefone
         };
-
     } catch (erro) {
         console.error("Erro ao atualizar cliente:", erro);
         throw erro;
     }
 }
+
 
 
 // 5. Excluir Cliente

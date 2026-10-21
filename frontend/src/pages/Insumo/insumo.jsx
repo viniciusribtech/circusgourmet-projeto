@@ -10,324 +10,286 @@ import PopUpFormulario from "../../components/PopUpFormulario/popUpFormulario.js
 import PopUpConfirmacao from "../../components/PopUpConfirmacao/popUpConfirmacao.jsx";
 
 import {
-    listarInsumos,
-    buscarInsumos,
-    cadastrarInsumo,
-    atualizarInsumo,
-    excluirInsumo,
-    mensagemDeErro
+  listarInsumos,
+  buscarInsumos,
+  cadastrarInsumo,
+  atualizarInsumo,
+  excluirInsumo,
+  mensagemDeErro
 } from "../../services/insumoService.js";
 
 import "./insumo.css";
 
 function Insumos() {
-    const [insumos, setInsumos] = useState([]);
+  const [insumos, setInsumos] = useState([]);
 
-    const [termo, setTermo] = useState("");
-    const [carregando, setCarregando] = useState(true);
-    const [erro, setErro] = useState("");
+  const [termo, setTermo] = useState("");
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState("");
 
-    const [paginaAtual, setPaginaAtual] = useState(1);
+  const [paginaAtual, setPaginaAtual] = useState(1);
 
-    const [popupAberto, setPopupAberto] = useState(false);
-    const [insumoEditando, setInsumoEditando] = useState(null);
+  const [popupAberto, setPopupAberto] = useState(false);
+  const [insumoEditando, setInsumoEditando] = useState(null);
 
-    const [popupExclusaoAberto, setPopupExclusaoAberto] = useState(false);
-    const [insumoExcluindo, setInsumoExcluindo] = useState(null);
+  const [popupExclusaoAberto, setPopupExclusaoAberto] = useState(false);
+  const [insumoExcluindo, setInsumoExcluindo] = useState(null);
 
-    const insumosPorPagina = 4;
+  const insumosPorPagina = 4;
 
-    /*
-     * BUSCAR TODOS OS INSUMOS
-     */
-    const carregarInsumos = async () => {
-        try {
-            setCarregando(true);
-            setErro("");
+  /*
+   * BUSCAR TODOS OS INSUMOS
+   */
+  const carregarInsumos = async () => {
+    try {
+      setCarregando(true);
+      setErro("");
 
-            const dados = await listarInsumos();
+      const dados = await listarInsumos();
 
-            setInsumos(dados);
-            setPaginaAtual(1);
+      setInsumos(dados);
+      setPaginaAtual(1);
+    } catch (erro) {
+      console.error(erro);
+      setErro(mensagemDeErro(erro));
+    } finally {
+      setCarregando(false);
+    }
+  };
 
-        } catch (erro) {
-            console.error(erro);
-            setErro(mensagemDeErro(erro));
-        } finally {
-            setCarregando(false);
-        }
-    };
+  /*
+   * CARREGAR INSUMOS QUANDO A PÁGINA ABRIR
+   */
+  useEffect(() => {
+    carregarInsumos();
+  }, []);
 
-    /*
-     * CARREGAR INSUMOS QUANDO A PÁGINA ABRIR
-     */
-    useEffect(() => {
-        carregarInsumos();
-    }, []);
+  /*
+   * PESQUISAR INSUMOS
+   */
+  const pesquisarInsumos = async () => {
+    const pesquisa = termo.trim();
 
-    /*
-     * PESQUISAR INSUMOS
-     */
-    const pesquisarInsumos = async () => {
-        try {
-            setCarregando(true);
-            setErro("");
+    if (!pesquisa) {
+      setErro("Preencha a barra de pesquisa!");
+      return;
+    }
 
-            if (termo.trim() === "") {
-                await carregarInsumos();
-                return;
-            }
+    try {
+      setCarregando(true);
+      setErro("");
 
-            const dados = await buscarInsumos(termo);
+      const dados = await buscarInsumos(pesquisa);
 
-            setInsumos(dados);
-            setPaginaAtual(1);
+      setInsumos(dados);
+      setPaginaAtual(1);
 
-        } catch (erro) {
-            console.error(erro);
-            setErro(mensagemDeErro(erro));
-        } finally {
-            setCarregando(false);
-        }
-    };
-
-    /*
-     * ABRIR POP-UP PARA NOVO INSUMO
-     */
-    const abrirCadastro = () => {
-        setInsumoEditando(null);
-        setPopupAberto(true);
-    };
-
-    /*
-     * ABRIR POP-UP PARA EDITAR INSUMO
-     */
-    const abrirEdicao = (insumo) => {
-        setInsumoEditando(insumo);
-        setPopupAberto(true);
-    };
-
-    /*
-     * FECHAR POP-UP
-     */
-    const fecharPopup = () => {
-        setPopupAberto(false);
-        setInsumoEditando(null);
-    };
-
-    /*
-     * CADASTRAR OU EDITAR INSUMO
-     */
-    const salvarInsumo = async (dados) => {
-        try {
-
-            if (insumoEditando) {
-                await atualizarInsumo(
-                    insumoEditando.id_insumo,
-                    dados
-                );
-            } else {
-                await cadastrarInsumo(dados);
-            }
-
-            fecharPopup();
-            await carregarInsumos();
-
-        } catch (erro) {
-            console.error(erro);
-
-            alert(
-                mensagemDeErro(erro)
-            );
-        }
-    };
-
-    /*
-     * EXCLUIR INSUMO
-     *
-     * Apenas abre o popup de confirmação.
-     */
-    const excluirInsumoSelecionado = (insumo) => {
-        setInsumoExcluindo(insumo);
-        setPopupExclusaoAberto(true);
-    };
-
-    /*
-     * EXCLUIR INSUMO APÓS CONFIRMAÇÃO
-     */
-    const confirmarExclusao = async () => {
-        try {
-
-            await excluirInsumo(
-                insumoExcluindo.id_insumo
-            );
-
-            setPopupExclusaoAberto(false);
-            setInsumoExcluindo(null);
-
-            await carregarInsumos();
-
-        } catch (erro) {
-            console.error(erro);
-
-            alert(
-                mensagemDeErro(erro)
-            );
-        }
-    };
-
-    /*
-     * PAGINAÇÃO
-     */
-    const totalPaginas = Math.ceil(
-        insumos.length / insumosPorPagina
-    );
-
-    const indiceInicial =
-        (paginaAtual - 1) * insumosPorPagina;
-
-    const insumosDaPagina = insumos.slice(
-        indiceInicial,
-        indiceInicial + insumosPorPagina
-    );
-
-    const mudarPagina = (pagina) => {
-        if (pagina < 1 || pagina > totalPaginas) {
-            return;
-        }
-
-        setPaginaAtual(pagina);
-    };
-
-    return (
-        <>
-            <Navbar />
-
-            <main className="pagina-insumos">
-
-                <div className="cabecalho-insumos">
-
-                    <CabecalhoPagina
-                        titulo="Controle de Insumos"
-                        subtitulo="Gerencie seus insumos e custos."
-                    />
-
-                    <Botao onClick={abrirCadastro}>
-                        Novo Insumo
-                    </Botao>
-
-                </div>
+      if (dados.length === 0) {
+        setErro("Resultados não encontrados!");
+      }
+    } catch (erro) {
+      console.error(erro);
+      setErro(mensagemDeErro(erro));
+    } finally {
+      setCarregando(false);
+    }
+  };
+/*
+*LIMPA A PESQUISA
+*/
+const limparPesquisa = async () => {
+    setTermo("");
+    setErro("");
+    await carregarInsumos();
+};
 
 
-                <div className="area-filtros">
+  /*
+   * ABRIR POP-UP PARA NOVO INSUMO
+   */
+  const abrirCadastro = () => {
+    setInsumoEditando(null);
+    setPopupAberto(true);
+  };
 
-                    <CampoPesquisa
-                        valor={termo}
-                        onChange={setTermo}
-                        onPesquisar={pesquisarInsumos}
-                        placeholder="Pesquisar por nome..."
-                    />
+  /*
+   * ABRIR POP-UP PARA EDITAR INSUMO
+   */
+  const abrirEdicao = (insumo) => {
+    setInsumoEditando(insumo);
+    setPopupAberto(true);
+  };
 
-                </div>
+  /*
+   * FECHAR POP-UP
+   */
+  const fecharPopup = () => {
+    setPopupAberto(false);
+    setInsumoEditando(null);
+  };
 
+  /*
+   * CADASTRAR OU EDITAR INSUMO
+   */
+  const salvarInsumo = async (dados) => {
+    try {
+      if (insumoEditando) {
+        await atualizarInsumo(insumoEditando.id_insumo, dados);
+      } else {
+        await cadastrarInsumo(dados);
+      }
 
-                {carregando ? (
+      fecharPopup();
+      await carregarInsumos();
+    } catch (erro) {
+      console.error(erro);
 
-                    <div className="mensagem-tabela">
-                        Carregando insumos...
-                    </div>
+      alert(mensagemDeErro(erro));
+    }
+  };
 
-                ) : erro ? (
+  /*
+   * EXCLUIR INSUMO
+   *
+   * Apenas abre o popup de confirmação.
+   */
+  const excluirInsumoSelecionado = (insumo) => {
+    setInsumoExcluindo(insumo);
+    setPopupExclusaoAberto(true);
+  };
 
-                    <div className="mensagem-tabela erro">
-                        {erro}
-                    </div>
+  /*
+   * EXCLUIR INSUMO APÓS CONFIRMAÇÃO
+   */
+  const confirmarExclusao = async () => {
+    try {
+      await excluirInsumo(insumoExcluindo.id_insumo);
 
-                ) : (
+      setPopupExclusaoAberto(false);
+      setInsumoExcluindo(null);
 
-                    <>
-                        <TabelaInsumo
-                            insumos={insumosDaPagina}
-                            onEditar={abrirEdicao}
-                            onExcluir={excluirInsumoSelecionado}
-                        />
+      await carregarInsumos();
+    } catch (erro) {
+      console.error(erro);
 
-                        <div className="rodape-tabela">
+      alert(mensagemDeErro(erro));
+    }
+  };
 
-                            <span>
-                                Exibindo{" "}
-                                {insumos.length === 0
-                                    ? 0
-                                    : indiceInicial + 1}
-                                -
-                                {Math.min(
-                                    indiceInicial + insumosPorPagina,
-                                    insumos.length
-                                )}{" "}
-                                de {insumos.length} insumos
-                            </span>
+  /*
+   * PAGINAÇÃO
+   */
+  const totalPaginas = Math.ceil(insumos.length / insumosPorPagina);
 
-                            <Paginacao
-                                paginaAtual={paginaAtual}
-                                totalPaginas={totalPaginas}
-                                onMudarPagina={mudarPagina}
-                            />
+  const indiceInicial = (paginaAtual - 1) * insumosPorPagina;
 
-                        </div>
-                    </>
+  const insumosDaPagina = insumos.slice(
+    indiceInicial,
+    indiceInicial + insumosPorPagina,
+  );
 
-                )}
+  const mudarPagina = (pagina) => {
+    if (pagina < 1 || pagina > totalPaginas) {
+      return;
+    }
 
-            </main>
+    setPaginaAtual(pagina);
+  };
 
+  return (
+    <>
+      <Navbar />
 
-            <PopUpFormulario
-                aberto={popupAberto}
-                titulo={
-                    insumoEditando
-                        ? "Editar Insumo"
-                        : "Cadastro de Insumo"
-                }
-                subtitulo={
-                    insumoEditando
-                        ? "Edite os dados do insumo."
-                        : "Preencha as informações técnicas do novo insumo gourmet para o seu inventário."
-                }
-                cliente={insumoEditando}
-                campos={[
-                    {
-                        nome: "nome",
-                        label: "Nome do insumo",
-                        placeholder: "Nome do insumo"
-                    },
-                    {
-                        nome: "custo_unitario",
-                        label: "Custo unitário (R$)",
-                        placeholder: "0,00"
-                    }
-                ]}
-                onSalvar={salvarInsumo}
-                onFechar={fecharPopup}
+      <main className="pagina-insumos">
+        <div className="cabecalho-insumos">
+          <CabecalhoPagina
+            titulo="Controle de Insumos"
+            subtitulo="Gerencie seus insumos e custos."
+          />
+
+          <Botao onClick={abrirCadastro}>Novo Insumo</Botao>
+        </div>
+
+        <div className="area-filtros">
+          <CampoPesquisa
+            valor={termo}
+            onChange={setTermo}
+            onPesquisar={pesquisarInsumos}
+            onLimpar={limparPesquisa}
+            placeholder="Pesquisar por nome..."
+          />
+        </div>
+
+        {carregando ? (
+          <div className="mensagem-tabela">Carregando insumos...</div>
+        ) : erro ? (
+          <div className="mensagem-tabela erro">{erro}</div>
+        ) : (
+          <>
+            <TabelaInsumo
+              insumos={insumosDaPagina}
+              onEditar={abrirEdicao}
+              onExcluir={excluirInsumoSelecionado}
             />
 
+            <div className="rodape-tabela">
+              <span>
+                Exibindo {insumos.length === 0 ? 0 : indiceInicial + 1}-
+                {Math.min(indiceInicial + insumosPorPagina, insumos.length)} de{" "}
+                {insumos.length} insumos
+              </span>
 
-            <PopUpConfirmacao
-                aberto={popupExclusaoAberto}
-                titulo="Excluir insumo"
-                mensagem={
-                    insumoExcluindo
-                        ? `Deseja realmente excluir o insumo "${insumoExcluindo.nome}"?`
-                        : ""
-                }
-                onConfirmar={confirmarExclusao}
-                onFechar={() => {
-                    setPopupExclusaoAberto(false);
-                    setInsumoExcluindo(null);
-                }}
-            />
+              <Paginacao
+                paginaAtual={paginaAtual}
+                totalPaginas={totalPaginas}
+                onMudarPagina={mudarPagina}
+              />
+            </div>
+          </>
+        )}
+      </main>
 
-        </>
-    );
+      <PopUpFormulario
+        aberto={popupAberto}
+        titulo={insumoEditando ? "Editar Insumo" : "Cadastro de Insumo"}
+        subtitulo={
+          insumoEditando
+            ? "Edite os dados do insumo."
+            : "Preencha as informações técnicas do novo insumo gourmet para o seu inventário."
+        }
+        cliente={insumoEditando}
+        campos={[
+          {
+            nome: "nome",
+            label: "Nome do insumo",
+            placeholder: "Nome do insumo",
+          },
+          {
+            nome: "custo_unitario",
+            label: "Custo unitário (R$)",
+            placeholder: "0,00",
+          },
+        ]}
+        onSalvar={salvarInsumo}
+        onFechar={fecharPopup}
+      />
+
+      <PopUpConfirmacao
+        aberto={popupExclusaoAberto}
+        titulo="Excluir insumo"
+        mensagem={
+          insumoExcluindo
+            ? `Deseja realmente excluir o insumo "${insumoExcluindo.nome}"?`
+            : ""
+        }
+        onConfirmar={confirmarExclusao}
+        onFechar={() => {
+          setPopupExclusaoAberto(false);
+          setInsumoExcluindo(null);
+        }}
+      />
+    </>
+  );
 }
 
 export default Insumos;

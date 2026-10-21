@@ -69,27 +69,46 @@ function Clientes() {
      * PESQUISAR CLIENTES
      */
     const pesquisarClientes = async () => {
-        try {
-            setCarregando(true);
-            setErro("");
+    const pesquisa = termo.trim();
 
-            if (termo.trim() === "") {
-                await carregarClientes();
-                return;
-            }
+    if (!pesquisa) {
+        setErro("Preencha a barra de pesquisa!");
+        return;
+    }
 
-            const dados = await buscarClientes(termo);
+    try {
+        setCarregando(true);
+        setErro("");
 
-            setClientes(dados);
-            setPaginaAtual(1);
+        const dados = await buscarClientes(pesquisa);
 
-        } catch (erro) {
-            console.error(erro);
-            setErro(mensagemDeErro(erro));
-        } finally {
-            setCarregando(false);
+        setClientes(dados);
+        setPaginaAtual(1);
+
+        if (dados.length === 0) {
+            setErro("Resultados não encontrados!");
         }
+    } catch (erro) {
+        console.error(erro);
+        setErro(mensagemDeErro(erro));
+    } finally {
+        setCarregando(false);
+    }
     };
+
+
+    /*
+    * LIMPAR PESQUISA
+    */
+    const limparPesquisa = async () => {
+        setTermo("");
+        setErro("");
+        setPaginaAtual(1);
+
+        await carregarClientes();
+    };
+
+
 
     /*
      * ABRIR POP-UP PARA NOVO CLIENTE
@@ -225,10 +244,13 @@ function Clientes() {
                         valor={termo}
                         onChange={setTermo}
                         onPesquisar={pesquisarClientes}
+                        onLimpar={limparPesquisa}
                         placeholder="Pesquisar por nome ou telefone..."
                     />
 
                 </div>
+
+
 
 
                 {carregando ? (

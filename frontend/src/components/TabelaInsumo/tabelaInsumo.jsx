@@ -53,7 +53,7 @@ function TabelaInsumo({ insumos, onEditar, onExcluir }) {
                                         onClick={() => onExcluir(insumo)}
                                         title="Excluir insumo"
                                     >
-                                        🗑
+                                        🗑 
                                     </button>
 
                                 </td>
