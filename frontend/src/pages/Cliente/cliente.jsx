@@ -137,29 +137,61 @@ function Clientes() {
     /*
      * CADASTRAR OU EDITAR CLIENTE
      */
-    const salvarCliente = async (dados) => {
-        try {
+    
+const salvarCliente = async (dados) => {
+    try {
+        const nome = String(dados.nome ?? "").trim();
+        const telefone = String(dados.telefone ?? "").trim();
 
-            if (clienteEditando) {
-                await atualizarCliente(
-                    clienteEditando.id_cliente,
-                    dados
-                );
-            } else {
-                await cadastrarCliente(dados);
-            }
+        // Normaliza os dados para comparação
+        const nomeNormalizado = nome.toLocaleLowerCase("pt-BR");
+        const telefoneNormalizado = telefone.replace(/\D/g, "");
 
-            fecharPopup();
-            await carregarClientes();
+        // Busca todos os clientes, mesmo se a tabela estiver filtrada
+        const clientesCadastrados = await listarClientes();
 
-        } catch (erro) {
-            console.error(erro);
+        // Verifica se já existe outro cliente com os mesmos dados
+        const clienteDuplicado = clientesCadastrados.some((cliente) => {
+            const mesmoNome =
+                String(cliente.nome ?? "")
+                    .trim()
+                    .toLocaleLowerCase("pt-BR") === nomeNormalizado;
 
-            alert(
-                mensagemDeErro(erro)
-            );
+            const mesmoTelefone =
+                String(cliente.telefone ?? "").replace(/\D/g, "") ===
+                telefoneNormalizado;
+
+            const outroCliente =
+                cliente.id_cliente !== clienteEditando?.id_cliente;
+
+            return outroCliente && mesmoNome && mesmoTelefone;
+        });
+
+        if (clienteDuplicado) {
+            alert("Já existe um cliente com esse nome e telefone.");
+            return;
         }
-    };
+
+        // Continua com o cadastro ou a edição normalmente
+        const dadosValidados = { nome, telefone };
+
+        if (clienteEditando) {
+            await atualizarCliente(
+                clienteEditando.id_cliente,
+                dadosValidados
+            );
+        } else {
+            await cadastrarCliente(dadosValidados);
+        }
+
+        fecharPopup();
+        await carregarClientes();
+
+    } catch (erro) {
+        console.error(erro);
+        alert(mensagemDeErro(erro));
+    }
+};
 
     /*
      * EXCLUIR CLIENTE
