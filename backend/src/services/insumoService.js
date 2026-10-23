@@ -46,7 +46,7 @@ async function cadastrarInsumo(dadosDoInsumo) {
     }
 
     // Verifica se já existe um insumo com o mesmo nome
-    validarLimitesDoBanco(nome.trim(), custoValidado);
+    //validarLimitesDoBanco(nome.trim(), custoValidado);
     const [insumoExistente] = await pool.query(
         'SELECT id_insumo FROM Insumo WHERE nome = ?',
         [nome.trim()]
@@ -82,7 +82,7 @@ async function atualizarInsumo(idDoInsumo, dadosDoInsumo) {
     if (!Number.isFinite(custoValidado) || custoValidado < 0) {
         throw new Error("O custo unitário deve ser um número e não pode ser negativo!");
     }
-    validarLimitesDoBanco(nome.trim(), custoValidado);
+    //validarLimitesDoBanco(nome.trim(), custoValidado);
     // Verifica se outro insumo já possui esse nome
     const [insumoExistente] = await pool.query(
         'SELECT id_insumo FROM Insumo WHERE nome = ? AND id_insumo <> ?',
