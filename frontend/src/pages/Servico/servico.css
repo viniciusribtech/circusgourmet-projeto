@@ -1,0 +1,24 @@
+/* Apenas regras específicas de Serviços. Os elementos compartilhados
+   (pesquisa, mensagens e rodapé) usam as mesmas classes de Insumos. */
+.pagina-servicos {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px;
+    box-sizing: border-box;
+}
+
+.cabecalho-servicos {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 28px;
+}
+
+.aviso-servico { color: #2a6541; margin-bottom: 20px; }
+
+@media (max-width: 650px) {
+    .pagina-servicos { padding: 20px 12px; }
+    .cabecalho-servicos { flex-direction: column; gap: 16px; }
+    .rodape-tabela { flex-wrap: wrap; gap: 12px; }
+}

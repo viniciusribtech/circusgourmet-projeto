@@ -5,7 +5,9 @@ function PopUpConfirmacao({
     titulo = "Confirmar exclusão",
     mensagem,
     onConfirmar,
-    onFechar
+    onFechar,
+    erro = "",
+    processando = false
 }) {
     if (!aberto) {
         return null;
@@ -22,6 +24,7 @@ function PopUpConfirmacao({
                         type="button"
                         className="popup-confirmacao-fechar"
                         onClick={onFechar}
+                        disabled={processando}
                     >
                         ×
                     </button>
@@ -31,11 +34,14 @@ function PopUpConfirmacao({
                     {mensagem}
                 </p>
 
+                {erro && <p role="alert" className="popup-confirmacao-erro">{erro}</p>}
+
                 <div className="popup-confirmacao-acoes">
                     <button
                         type="button"
                         className="botao-cancelar"
                         onClick={onFechar}
+                        disabled={processando}
                     >
                         Cancelar
                     </button>
@@ -44,8 +50,9 @@ function PopUpConfirmacao({
                         type="button"
                         className="botao-confirmar-exclusao"
                         onClick={onConfirmar}
+                        disabled={processando}
                     >
-                        Excluir
+                        {processando ? 'Excluindo...' : 'Excluir'}
                     </button>
                 </div>
 

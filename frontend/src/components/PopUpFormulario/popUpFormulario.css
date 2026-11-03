@@ -165,3 +165,172 @@
 .botao-salvar:hover {
     background-color: #850000;
 }
+/* Extensões compatíveis: descrição e categoria no formulário de serviços. */
+.popup-formulario { max-width: calc(100vw - 32px); max-height: calc(100vh - 32px); overflow-y: auto; }
+.campo-formulario textarea, .campo-formulario select {
+    width: 100%; padding: 9px 10px; border: 1px solid #ead5d1;
+    border-radius: 5px; background-color: #ffffff; color: #403532;
+    font-size: 12px; outline: none; box-sizing: border-box;
+}
+.campo-formulario textarea { min-height: 88px; resize: vertical; }
+.campo-formulario select { height: 36px; }
+.campo-formulario textarea:focus, .campo-formulario select:focus { border-color: #b98478; }
+.popup-erro { background: #fff0ee; color: #6d0000; border: 1px solid #ead5d1;
+    border-radius: 5px; padding: 10px; margin-bottom: 14px; font-size: 12px; }
+.popup-acoes button:disabled, .popup-fechar:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Apresentação do cadastro de Serviços inspirada no HTML fornecido.
+   Toda a customização é isolada: Cliente e Insumo preservam seus estilos. */
+.popup-fundo-servico {
+    background: rgba(25, 28, 29, .42);
+    backdrop-filter: blur(5px);
+    padding: 18px;
+    box-sizing: border-box;
+}
+.popup-formulario-servico {
+    width: min(100%, 672px);
+    padding: 0;
+    max-height: min(92vh, 850px);
+    overflow-y: auto;
+    border: 1px solid #e3beb8;
+    border-top: 3px solid #e9c349;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .98);
+    box-shadow: 0 22px 65px rgba(25, 28, 29, .22);
+    font-family: Inter, Arial, sans-serif;
+}
+.popup-formulario-servico .popup-cabecalho {
+    padding: 28px 30px 0;
+    gap: 20px;
+}
+.popup-formulario-servico .popup-cabecalho h2 {
+    color: #191c1d;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+.popup-formulario-servico .popup-subtitulo {
+    padding: 0 30px;
+    margin: 7px 0 22px;
+    font-size: 14px;
+    color: #5a403c;
+}
+.popup-formulario-servico .popup-erro { margin: 0 30px 18px; font-size: 13px; }
+.popup-formulario-servico .popup-campos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 22px;
+    row-gap: 18px;
+    padding: 0 30px;
+}
+.popup-formulario-servico .campo-formulario { margin: 0; min-width: 0; }
+.popup-formulario-servico .campo-formulario-nome,
+.popup-formulario-servico .campo-formulario-descricao { grid-column: 1 / -1; }
+.popup-formulario-servico .campo-formulario label {
+    margin-bottom: 7px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .045em;
+    color: #5a403c;
+}
+.popup-indicador-obrigatorio { color: #ba1a1a; }
+.popup-formulario-servico .campo-formulario input,
+.popup-formulario-servico .campo-formulario select,
+.popup-formulario-servico .campo-formulario textarea {
+    width: 100%;
+    height: 46px;
+    padding: 10px 14px;
+    border: 1px solid #e3beb8;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 14px;
+    color: #191c1d;
+    transition: border-color .15s, box-shadow .15s;
+}
+.popup-formulario-servico .campo-formulario textarea {
+    height: auto;
+    min-height: 106px;
+    resize: vertical;
+}
+.popup-formulario-servico .campo-formulario input:focus,
+.popup-formulario-servico .campo-formulario select:focus,
+.popup-formulario-servico .campo-formulario textarea:focus {
+    border-color: #610000;
+    box-shadow: 0 0 0 2px rgba(97,0,0,.10);
+}
+.popup-formulario-servico .popup-nota-servico {
+    margin: 22px 30px 26px;
+    padding: 15px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    border: 1px solid #e3beb8;
+    border-radius: 8px;
+    background: #f3f4f5;
+    color: #5a403c;
+}
+.popup-formulario-servico .popup-nota-servico > span {
+    color: #735c00;
+    font-size: 21px;
+    line-height: 1;
+}
+.popup-formulario-servico .popup-nota-servico p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.6;
+    font-style: italic;
+}
+.popup-formulario-servico .popup-nota-servico strong { color: #ba1a1a; }
+.popup-formulario-servico .popup-acoes {
+    margin: 0;
+    padding: 20px 30px;
+    border-top: 1px solid #e3beb8;
+    background: #fff;
+    gap: 12px;
+}
+.popup-formulario-servico .popup-acoes button {
+    height: 46px;
+    min-width: 132px;
+    padding: 0 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    transition: background .15s, transform .15s;
+}
+.popup-formulario-servico .botao-cancelar {
+    color: #735c00;
+    border: 1px solid #735c00;
+}
+.popup-formulario-servico .botao-cancelar:hover { background: #fff9e8; }
+.popup-formulario-servico .botao-salvar { background: #610000; border-color: #610000; }
+.popup-formulario-servico .botao-salvar:hover { background: #8b0000; }
+.popup-formulario-servico .popup-acoes button:active { transform: scale(.98); }
+@media (max-width: 540px) {
+    .popup-formulario-servico .popup-campos { grid-template-columns: 1fr; padding: 0 18px; }
+    .popup-formulario-servico .popup-cabecalho { padding: 22px 18px 0; }
+    .popup-formulario-servico .popup-subtitulo { padding: 0 18px; }
+    .popup-formulario-servico .popup-nota-servico { margin: 20px 18px; }
+    .popup-formulario-servico .popup-erro { margin: 0 18px 18px; }
+    .popup-formulario-servico .popup-acoes { padding: 16px 18px; }
+    .popup-formulario-servico .popup-acoes button { min-width: 0; flex: 1; }
+}
+
+/* Campos adicionais usam o mesmo visual de input já utilizado por Cliente e Insumo. */
+.popup-formulario .campo-formulario select,
+.popup-formulario .campo-formulario textarea {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid #ead5d1;
+    border-radius: 5px;
+    background: #fff;
+    color: #403532;
+    font-size: 12px;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+.popup-formulario .campo-formulario select { height: 36px; }
+.popup-formulario .campo-formulario textarea { min-height: 84px; resize: vertical; }
+.popup-formulario .campo-formulario select:focus,
+.popup-formulario .campo-formulario textarea:focus { outline: 1px solid #6d0000; }
+.popup-formulario { max-width: calc(100vw - 32px); max-height: calc(100vh - 32px); overflow-y: auto; }

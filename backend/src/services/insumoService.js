@@ -12,6 +12,21 @@ function validarId(idDoInsumo) {
     }
 }
 
+// Valida os limites permitidos para o insumo
+function validarLimitesDoBanco(nome, custoUnitario) {
+    if (nome.length > TAMANHO_MAXIMO_NOME) {
+        throw new Error(
+            `O nome do insumo não pode ultrapassar ${TAMANHO_MAXIMO_NOME} caracteres.`
+        );
+    }
+
+    if (custoUnitario > CUSTO_MAXIMO) {
+        throw new Error(
+            `O custo unitário não pode ultrapassar R$ ${CUSTO_MAXIMO.toFixed(2)}.`
+        );
+    }
+}
+
 // 1. Listar todos os insumos
 async function listarInsumos() {
     const [listaDeInsumos] = await pool.query(
@@ -46,7 +61,7 @@ async function cadastrarInsumo(dadosDoInsumo) {
     }
 
     // Verifica se já existe um insumo com o mesmo nome
-    //validarLimitesDoBanco(nome.trim(), custoValidado);
+    validarLimitesDoBanco(nome.trim(), custoValidado);
     const [insumoExistente] = await pool.query(
         'SELECT id_insumo FROM Insumo WHERE nome = ?',
         [nome.trim()]
@@ -82,7 +97,7 @@ async function atualizarInsumo(idDoInsumo, dadosDoInsumo) {
     if (!Number.isFinite(custoValidado) || custoValidado < 0) {
         throw new Error("O custo unitário deve ser um número e não pode ser negativo!");
     }
-    //validarLimitesDoBanco(nome.trim(), custoValidado);
+    validarLimitesDoBanco(nome.trim(), custoValidado);
     // Verifica se outro insumo já possui esse nome
     const [insumoExistente] = await pool.query(
         'SELECT id_insumo FROM Insumo WHERE nome = ? AND id_insumo <> ?',

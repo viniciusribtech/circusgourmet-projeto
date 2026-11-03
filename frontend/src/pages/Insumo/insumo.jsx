@@ -18,7 +18,7 @@ import {
   mensagemDeErro
 } from "../../services/insumoService.js";
 
-import "./Insumo.css";
+import "./insumo.css";
 
 function Insumos() {
   const [insumos, setInsumos] = useState([]);

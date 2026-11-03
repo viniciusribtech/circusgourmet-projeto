@@ -4,6 +4,7 @@ import Navbar from './components/BarraNav/navbar.jsx';
 import Home from './pages/Home/home';
 import Clientes from './pages/Cliente/cliente';
 import Insumo from './pages/Insumo/insumo';
+import Servico from './pages/Servico/servico.jsx';
 
 // Página provisória para rotas que ainda não foram criadas
 function EmConstrucao() {
@@ -24,6 +25,7 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/clientes" element={<Clientes />} />
                 <Route path="/insumos" element={<Insumo/>}/>
+                <Route path="/servicos" element={<Servico />} />
 
                 {/* Qualquer outra rota (Serviço, Evento, etc.) */}
                 <Route path="*" element={<EmConstrucao />} />
