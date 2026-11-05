@@ -1,0 +1,91 @@
+.tabela-generica {
+    width: 100%;
+    border: 1px solid #ead5d1;
+    border-radius: 7px;
+    overflow: hidden;
+    background-color: #ffffff;
+}
+
+.tabela-generica table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.tabela-generica thead {
+    background-color: #faf7f6;
+}
+
+.tabela-generica th {
+    height: 34px;
+    padding: 0 12px;
+    border-bottom: 1px solid #ead5d1;
+    color: #6d5b57;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.tabela-generica td {
+    height: 35px;
+    padding: 0 12px;
+    border-bottom: 1px solid #ead5d1;
+    color: #403532;
+    font-size: 12px;
+}
+
+.tabela-generica tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.tabela-generica tbody tr:hover {
+    background-color: #fffafa;
+}
+
+.tabela-generica .coluna-acoes {
+    width: 90px;
+    text-align: center;
+}
+
+.tabela-generica .acoes {
+    text-align: center;
+}
+
+.tabela-generica .botao-acao {
+    width: 25px;
+    height: 25px;
+    padding: 0;
+    border: none;
+    background-color: transparent;
+    color: #68443d;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.tabela-generica .botao-acao:hover {
+    transform: scale(1.1);
+}
+
+.tabela-generica .mensagem-vazia {
+    height: 80px !important;
+    text-align: center;
+    color: #897a76 !important;
+}
+
+/* Badges para status (opcional, útil para o Carrinho) */
+.badge-status {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.badge-status.ativo {
+    background-color: #e6f4ea;
+    color: #137333;
+}
+
+.badge-status.inativo {
+    background-color: #fce8e6;
+    color: #c5221f;
+}
