@@ -32,6 +32,10 @@ app.use('/api', clienteRoutes);
 const insumoRoutes = require('./src/routes/insumoRoutes');
 app.use('/api', insumoRoutes);
 
+// rota do carrinho
+const carrinhoRoutes = require('./src/routes/carrinhoRoutes');
+app.use('/api', carrinhoRoutes);
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => { 
     console.log(`Servidor rodando com sucesso na porta ${PORT}`); 
