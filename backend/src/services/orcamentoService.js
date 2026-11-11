@@ -1,19 +1,38 @@
 const pool = require('../database/connection');
 
+
 async function listarOrcamentos() {
     try {
         const query = `
-            SELECT *
-            FROM Orcamento
-            ORDER BY id_orcamento DESC
+            SELECT
+                O.id_orcamento,
+                O.valor_total,
+                O.desconto,
+                O.valor_final,
+                O.sinal_pagamento,
+                O.fk_Evento_id_evento,
+                E.nome_evento,
+                E.data_evento,
+                E.local,
+                E.status,
+                C.nome AS nome_cliente
+            FROM Orcamento O
+            INNER JOIN Evento E
+                ON O.fk_Evento_id_evento = E.id_evento
+            LEFT JOIN Cliente C
+                ON E.fk_Cliente_id_cliente = C.id_cliente
+            ORDER BY O.id_orcamento DESC
         `;
+
         const [rows] = await pool.query(query);
         return rows;
+
     } catch (erro) {
         console.error("Erro ao listar orçamentos:", erro);
         throw erro;
     }
 }
+
 
 async function buscarOrcamentos(termo) {
     try {
