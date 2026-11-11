@@ -36,6 +36,10 @@ app.use('/api', insumoRoutes);
 const carrinhoRoutes = require('./src/routes/carrinhoRoutes');
 app.use('/api', carrinhoRoutes);
 
+// rota do orcamento
+const orcamentoRoutes = require('./src/routes/orcamentoRoutes');
+app.use('/api', orcamentoRoutes);
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => { 
     console.log(`Servidor rodando com sucesso na porta ${PORT}`); 
