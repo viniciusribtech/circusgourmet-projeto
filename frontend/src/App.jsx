@@ -12,6 +12,9 @@ import Servico from './pages/Servico/servico.jsx';
 // Módulo de Carrinhos
 import Carrinhos from './pages/Carrinho/carrinho.jsx';
 
+// Módulo de Orçamentos
+import Orcamento from './pages/Orcamento/orcamento';
+
 // Página provisória para rotas que ainda não foram criadas
 function EmConstrucao() {
     return (
@@ -37,6 +40,9 @@ function App() {
 
                 {/* Módulo de Carrinhos */}
                 <Route path="/carrinho" element={<Carrinhos />} />
+
+                {/* Módulo de Orçamentos */}
+                <Route path="/orcamentos" element={<Orcamento />} />
 
                 {/* Rotas ainda não implementadas */}
                 <Route path="*" element={<EmConstrucao />} />
