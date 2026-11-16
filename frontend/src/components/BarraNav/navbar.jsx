@@ -17,7 +17,7 @@ function Navbar() {
                 <NavLink to="/eventos">Evento</NavLink>
                 <NavLink to="/orcamentos">Orçamento</NavLink>
                 <NavLink to="/insumos">Insumo</NavLink>
-                <NavLink to="/carrinhos">Carrinho</NavLink>
+                <NavLink to="/carrinho">Carrinho</NavLink>
             </div>
         </nav>
     )
