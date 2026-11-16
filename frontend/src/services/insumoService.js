@@ -22,13 +22,17 @@ function prepararDadosDoInsumo(dadosDoInsumo) {
     const nome = String(dadosDoInsumo.nome ?? "").trim();
     const custoDigitado = String(dadosDoInsumo.custo_unitario ?? "").trim();
     const custoNormalizado = custoDigitado.replace(",", ".");
+    if (!/^\d{1,2}(?:\.\d{1,2})?$/.test(custoNormalizado)) {
+        throw new Error('Formato inválido! Informe um custo de R$ 0,00 a R$ 99,99.');
+    }
     const custoUnitario = Number(custoNormalizado);
 
     if (!nome) throw new Error("O nome do insumo é obrigatório!");
     if (!custoDigitado || !Number.isFinite(custoUnitario) || custoUnitario < 0) {
         throw new Error("Informe um custo unitário válido e não negativo.");
     }
-    return { nome, custo_unitario: custoUnitario };
+    if (nome.length > 30) throw new Error('O nome deve ter no máximo 30 caracteres.');
+    return { nome, custo_unitario: custoUnitario }; 
 }
 
 export async function cadastrarInsumo(dadosDoInsumo) {

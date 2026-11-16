@@ -89,3 +89,12 @@
     background-color: #fce8e6;
     color: #c5221f;
 }
+/* Texto longo é truncado sem quebrar a distribuição das colunas. */
+.tabela-generica .texto-tabela-truncado {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.tabela-generica .acoes { white-space: nowrap; }

@@ -3,7 +3,7 @@ import Navbar from '../../components/BarraNav/navbar.jsx';
 import CabecalhoPagina from '../../components/CabecalhoPagina/cabecalhoPagina.jsx';
 import Botao from '../../components/Botao/botao.jsx';
 import CampoPesquisa from '../../components/CampoPesquisa/campoPesquisa.jsx';
-import TabelaServico from '../../components/TabelaServico/tabelaServico.jsx';
+import TabelaGenerica from '../../components/TabelaGenerica/tabelaGenerica.jsx';
 import Paginacao from '../../components/Paginacao/paginacao.jsx';
 import PopUpFormulario from '../../components/PopUpFormulario/popUpFormulario.jsx';
 import PopUpConfirmacao from '../../components/PopUpConfirmacao/popUpConfirmacao.jsx';
@@ -15,6 +15,32 @@ import '../Insumo/insumo.css';
 import './servico.css';
 
 const SERVICOS_POR_PAGINA = 4;
+const formatadorMoeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+// A mesma tabela reutilizada pelo módulo de Carrinhos.
+const COLUNAS_SERVICOS = [
+    {
+        titulo: 'NOME DO SERVIÇO',
+        campo: 'nome',
+        largura: '38%',
+        render: (servico) => <span className="texto-tabela-truncado" title={servico.nome || ''}>{servico.nome}</span>
+    },
+    {
+        titulo: 'PREÇO BASE',
+        campo: 'preco_base',
+        largura: '20%',
+        render: (servico) => formatadorMoeda.format(Number(servico.preco_base))
+    },
+    { titulo: 'MÃO DE OBRA', campo: 'preco_mao_obra', largura: '17%',
+        render: (servico) => servico.preco_mao_obra == null ? '—' : formatadorMoeda.format(Number(servico.preco_mao_obra)) },
+    { titulo: 'VISÍVEL', campo: 'visivel', largura: '12%',
+        render: (servico) => Boolean(Number(servico.visivel)) ? 'Sim' : 'Não' },
+    {
+        titulo: 'CATEGORIA',
+        campo: 'nome_categoria',
+        render: (servico) => <span className="texto-tabela-truncado" title={servico.nome_categoria || 'Sem categoria'}>{servico.nome_categoria || 'Sem categoria'}</span>
+    }
+];
 
 export default function Servico() {
     const [servicos, setServicos] = useState([]);
@@ -90,7 +116,9 @@ export default function Servico() {
             if (!Array.isArray(dados)) throw new Error('Resposta inválida ao listar categorias.');
             setCategorias(dados);
             setServicoEditando({ ...registro, preco_base: String(registro.preco_base ?? '').replace('.', ','),
-                fk_Categoria_id_categoria: registro.fk_Categoria_id_categoria == null ? '' : String(registro.fk_Categoria_id_categoria) });
+                fk_Categoria_id_categoria: registro.fk_Categoria_id_categoria == null ? '' : String(registro.fk_Categoria_id_categoria),
+                preco_mao_obra: registro.preco_mao_obra == null ? '' : String(registro.preco_mao_obra).replace('.', ','),
+                visivel: Boolean(Number(registro.visivel)) });
             setPopupAberto(true);
         } catch (falha) { setErro(mensagemErroServico(falha)); }
         finally { setCarregandoCategorias(false); }
@@ -166,6 +194,9 @@ export default function Servico() {
     const camposCadastro = useMemo(() => [
         { nome: 'nome', label: 'Nome do Serviço', placeholder: 'Ex: Buffet de Canapés Premium', tamanhoMaximo: 30 },
         { nome: 'preco_base', label: 'Preço Base (R$)', placeholder: '0,00', modoEntrada: 'decimal', limitarPrecoServico: true },
+        { nome: 'preco_mao_obra', label: 'Preço da Mão de Obra (R$) (Opcional)',
+            placeholder: '0,00', modoEntrada: 'decimal', limitarPrecoServico: true, obrigatorio: false },
+        { nome: 'visivel', label: 'Serviço visível no catálogo', tipo: 'checkbox', obrigatorio: false, valorPadrao: true },
         { nome: 'fk_Categoria_id_categoria', label: 'Categoria (Opcional)', tipo: 'selecao', obrigatorio: false,
             placeholder: 'Sem categoria', opcoes: categorias.map((categoria) => ({
                 valor: String(categoria.id_categoria), rotulo: categoria.nome_categoria
@@ -203,7 +234,14 @@ export default function Servico() {
                     <div className="mensagem-tabela erro" role="alert">{erro}</div>
                 ) : (
                     <>
-                        <TabelaServico servicos={servicosDaPagina} onEditar={abrirEdicao} onExcluir={abrirExclusao} />
+                        <TabelaGenerica
+                            colunas={COLUNAS_SERVICOS}
+                            dados={servicosDaPagina}
+                            chaveId="id_servico"
+                            onEditar={abrirEdicao}
+                            onExcluir={abrirExclusao}
+                            mensagemVazia="Nenhum serviço encontrado."
+                        />
                         <div className="rodape-tabela">
                             <span>Exibindo {servicos.length ? indiceInicial + 1 : 0}–
                                 {Math.min(indiceInicial + SERVICOS_POR_PAGINA, servicos.length)} de {servicos.length} serviços</span>

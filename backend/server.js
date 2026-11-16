@@ -47,6 +47,8 @@ app.use('/api', carrinhoRoutes);
 // rota do orcamento
 const orcamentoRoutes = require('./src/routes/orcamentoRoutes');
 app.use('/api', orcamentoRoutes);
+const eventoRoutes = require('./src/routes/eventoRoutes');
+app.use('/api', eventoRoutes);
 
 const PORT = process.env.PORT || 3000;
 

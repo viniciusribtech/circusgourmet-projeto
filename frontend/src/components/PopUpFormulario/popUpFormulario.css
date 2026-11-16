@@ -334,3 +334,42 @@
 .popup-formulario .campo-formulario select:focus,
 .popup-formulario .campo-formulario textarea:focus { outline: 1px solid #6d0000; }
 .popup-formulario { max-width: calc(100vw - 32px); max-height: calc(100vh - 32px); overflow-y: auto; }
+
+/* Checkbox compacto, sem herdar o tamanho dos campos de texto. */
+.popup-formulario .campo-formulario-checkbox {
+    margin-bottom: 16px;
+}
+.popup-formulario .campo-formulario-checkbox .campo-checkbox-label {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 9px;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0;
+    cursor: pointer;
+    line-height: 1.4;
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: 12px;
+}
+.popup-formulario .campo-formulario-checkbox input[type="checkbox"],
+.popup-formulario-servico .campo-formulario-checkbox input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    margin: 0;
+    padding: 0;
+    border-radius: 2px;
+    box-shadow: none;
+    accent-color: #6d0000;
+    cursor: pointer;
+    flex: none;
+}
+.popup-formulario .campo-formulario-checkbox input[type="checkbox"]:focus-visible {
+    outline: 2px solid #6d0000;
+    outline-offset: 2px;
+}
+.popup-formulario .campo-formulario-checkbox input[type="checkbox"]:disabled {
+    cursor: not-allowed;
+}

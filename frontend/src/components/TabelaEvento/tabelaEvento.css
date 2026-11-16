@@ -1,0 +1,20 @@
+/* Mesmos tamanhos, cores e ações da tabela de Serviços/Insumos. */
+.tabela-eventos { width: 100%; border: 1px solid #ead5d1; border-radius: 7px; overflow-x: auto; background: white; }
+.tabela-eventos table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 860px; }
+.tabela-eventos thead { background: #faf7f6; }
+.tabela-eventos th { height: 34px; padding: 0 12px; border-bottom: 1px solid #ead5d1; color: #6d5b57; text-align: left; font-size: 12px; font-weight: 700; }
+.tabela-eventos td { height: 40px; padding: 0 12px; border-bottom: 1px solid #ead5d1; color: #403532; font-size: 12px; }
+.tabela-eventos tbody tr:last-child td { border-bottom: none; }
+.tabela-eventos tbody tr:hover { background: #fffafa; }
+.tabela-eventos th:nth-child(1) { width: 17%; }
+.tabela-eventos th:nth-child(2) { width: 11%; }
+.tabela-eventos th:nth-child(3) { width: 12%; }
+.tabela-eventos th:nth-child(4) { width: 20%; }
+.tabela-eventos th:nth-child(5) { width: 16%; }
+.tabela-eventos th:nth-child(6) { width: 12%; }
+.tabela-eventos .coluna-acoes { width: 90px; text-align: center; }
+.tabela-eventos .acoes { text-align: center; white-space: nowrap; }
+.tabela-eventos .celula-cortada { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tabela-eventos .botao-acao { width: 25px; height: 25px; padding: 0; border: 0; background: transparent; color: #68443d; cursor: pointer; font-size: 17px; }
+.tabela-eventos .botao-acao:hover { transform: scale(1.1); }
+.tabela-eventos .nenhum-evento { height: 80px; text-align: center; color: #897a76; }

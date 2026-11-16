@@ -8,6 +8,7 @@ import Insumo from './pages/Insumo/insumo';
 
 // Módulo de Serviços
 import Servico from './pages/Servico/servico.jsx';
+import Evento from './pages/Evento/evento.jsx';
 
 // Módulo de Carrinhos
 import Carrinhos from './pages/Carrinho/carrinho.jsx';
@@ -37,6 +38,7 @@ function App() {
 
                 {/* Módulo de Serviços */}
                 <Route path="/servicos" element={<Servico />} />
+                <Route path="/eventos" element={<Evento />} />
 
                 {/* Módulo de Carrinhos */}
                 <Route path="/carrinho" element={<Carrinhos />} />

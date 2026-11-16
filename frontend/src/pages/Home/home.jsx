@@ -5,6 +5,7 @@ import Botao from "../../components/Botao/botao.jsx";
 import OcupacaoCarrinhos from "../../components/OcupacaoCarrinhos/ocupacaoCarrinhos.jsx";
 import ProximoEvento from "../../components/ProximoEvento/proximoEvento.jsx";
 import EstatisticasRapidas from "../../components/EstatisticasRapidas/estatisticasRapidas.jsx"
+import { useNavigate } from 'react-router-dom';
 
 import "./home.css";
 import { useState, useEffect } from 'react';
@@ -12,6 +13,8 @@ import { useState, useEffect } from 'react';
 function Home() {
   const [dadosDashboard, setDadosDashboard] = useState(null);
   const [dataSelecionada, setDataSelecionada] = useState(new Date());
+  const navegar = useNavigate();
+
 
   // Função para buscar os dados da API considerando o ano e o mês ativos
   const carregarDados = async (dataFiltro) => {
@@ -38,7 +41,7 @@ function Home() {
 
   if (!dadosDashboard) {
       return <div style={{ padding: '20px' }}>A carregar dados do servidor...</div>;
-  }
+  } 
 
   return (
     <>
@@ -49,7 +52,7 @@ function Home() {
             titulo="Calendário Operacional"
             subtitulo="Gestão centralizada de eventos e logística de carrinhos gourmet."
           />
-          <Botao onClick={() => alert("Abrir modal de novo evento")}>
+          <Botao onClick={() => navegar('/eventos?acao=novo')}>
             Novo Evento
           </Botao>
         </div>

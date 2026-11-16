@@ -30,7 +30,7 @@ function validarLimitesDoBanco(nome, custoUnitario) {
 // 1. Listar todos os insumos
 async function listarInsumos() {
     const [listaDeInsumos] = await pool.query(
-        'SELECT id_insumo, nome, custo_unitario FROM Insumo'
+        'SELECT id_insumo, nome, custo_unitario FROM Insumo ORDER BY nome, id_insumo'
     );
 
     return listaDeInsumos;
@@ -39,8 +39,10 @@ async function listarInsumos() {
 // 2. Buscar insumos por nome
 async function buscarInsumos(termoPesquisado) {
     const [resultadosDaBusca] = await pool.query(
-        'SELECT id_insumo, nome, custo_unitario FROM Insumo WHERE nome LIKE ?',
-        [`%${termoPesquisado}%`]
+        `SELECT id_insumo, nome, custo_unitario FROM Insumo
+         WHERE nome LIKE ? OR REPLACE(CAST(custo_unitario AS CHAR), '.', ',') LIKE ?
+         OR CAST(custo_unitario AS CHAR) LIKE ? ORDER BY nome, id_insumo`,
+        [`%${termoPesquisado}%`, `%${termoPesquisado}%`, `%${termoPesquisado.replace(',', '.')}%`]
     );
 
     return resultadosDaBusca;
@@ -54,7 +56,11 @@ async function cadastrarInsumo(dadosDoInsumo) {
         throw new Error("O nome do insumo é obrigatório!");
     }
 
-    const custoValidado = Number(custo_unitario);
+    const textoCusto = String(custo_unitario ?? '').trim().replace(',', '.');
+    if (!/^\d{1,2}(?:\.\d{1,2})?$/.test(textoCusto)) {
+        throw new Error('Formato inválido! Informe um custo de R$ 0,00 a R$ 99,99.');
+    }
+    const custoValidado = Number(textoCusto);
 
     if (!Number.isFinite(custoValidado) || custoValidado < 0) {
         throw new Error("O custo unitário deve ser um número e não pode ser negativo!");
@@ -92,7 +98,11 @@ async function atualizarInsumo(idDoInsumo, dadosDoInsumo) {
         throw new Error("O nome do insumo é obrigatório para a atualização!");
     }
 
-    const custoValidado = Number(custo_unitario);
+    const textoCusto = String(custo_unitario ?? '').trim().replace(',', '.');
+    if (!/^\d{1,2}(?:\.\d{1,2})?$/.test(textoCusto)) {
+        throw new Error('Formato inválido! Informe um custo de R$ 0,00 a R$ 99,99.');
+    }
+    const custoValidado = Number(textoCusto);
 
     if (!Number.isFinite(custoValidado) || custoValidado < 0) {
         throw new Error("O custo unitário deve ser um número e não pode ser negativo!");

@@ -12,7 +12,7 @@ function PopUpFormulario({
     useEffect(() => {
         const dadosIniciais = {};
         campos.forEach((campo) => {
-            dadosIniciais[campo.nome] = cliente?.[campo.nome] ?? "";
+            dadosIniciais[campo.nome] = cliente?.[campo.nome] ?? campo.valorPadrao ?? "";
         });
         setDados(dadosIniciais);
     }, [cliente, campos, aberto]);
@@ -60,9 +60,17 @@ function PopUpFormulario({
                         const obrigatorio = campo.obrigatorio !== false;
                         const identificador = `campo-popup-${campo.nome}`;
                         return (
-                            <div className={`campo-formulario campo-formulario-${campo.nome === "fk_Categoria_id_categoria" ? "categoria" : campo.nome}`} key={campo.nome}>
-                                <label htmlFor={identificador}>{campo.label}{obrigatorio ? <span className="popup-indicador-obrigatorio"> *</span> : ''}</label>
-                                {campo.tipo === 'selecao' ? (
+                            <div className={`campo-formulario campo-formulario-${campo.nome === "fk_Categoria_id_categoria" ? "categoria" : campo.nome}${campo.tipo === 'checkbox' ? ' campo-formulario-checkbox' : ''}`} key={campo.nome}>
+                                {campo.tipo === 'checkbox' ? (
+                                    <label className="campo-checkbox-label" htmlFor={identificador}>
+                                        <input id={identificador} type="checkbox" checked={Boolean(dados[campo.nome])}
+                                            onChange={(evento) => alterarCampo(campo.nome, evento.target.checked, campo)} disabled={salvando} />
+                                        <span>{campo.label}{obrigatorio ? <span className="popup-indicador-obrigatorio"> *</span> : ''}</span>
+                                    </label>
+                                ) : (
+                                    <label htmlFor={identificador}>{campo.label}{obrigatorio ? <span className="popup-indicador-obrigatorio"> *</span> : ''}</label>
+                                )}
+                                {campo.tipo === 'checkbox' ? null : campo.tipo === 'selecao' ? (
                                     <select id={identificador} value={dados[campo.nome] ?? ''}
                                         onChange={(evento) => alterarCampo(campo.nome, evento.target.value, campo)}
                                         required={obrigatorio} disabled={salvando}>

@@ -36,6 +36,8 @@ export async function cadastrarServico(dados) {
         nome,
         descricao: descricao || null,
         preco_base: precoBase.replace(',', '.'),
+        preco_mao_obra: normalizarMaoObra(dados.preco_mao_obra),
+        visivel: dados.visivel !== false,
         fk_Categoria_id_categoria: dados.fk_Categoria_id_categoria || null
     });
     return resposta.data;
@@ -61,6 +63,8 @@ export async function atualizarServico(idServico, dados) {
     }
     const resposta = await api.put(`/servicos/${idServico}`, {
         nome, descricao: descricao || null, preco_base: precoBase.replace(',', '.'),
+        preco_mao_obra: normalizarMaoObra(dados.preco_mao_obra),
+        visivel: dados.visivel !== false,
         fk_Categoria_id_categoria: dados.fk_Categoria_id_categoria || null
     });
     return resposta.data;
@@ -69,4 +73,13 @@ export async function atualizarServico(idServico, dados) {
 export async function excluirServico(idServico) {
     const resposta = await api.delete(`/servicos/${idServico}`);
     return resposta.data;
+}
+
+function normalizarMaoObra(valor) {
+    if (valor == null || String(valor).trim() === '') return null;
+    const texto = String(valor).trim();
+    if (!/^\d{1,3}(?:[.,]\d{1,2})?$/.test(texto) || Number(texto.replace(',', '.')) > 999.99) {
+        throw new Error('Informe um preço da mão de obra válido, até R$ 999,99.');
+    }
+    return texto.replace(',', '.');
 }

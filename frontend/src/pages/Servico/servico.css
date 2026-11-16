@@ -22,3 +22,9 @@
     .cabecalho-servicos { flex-direction: column; gap: 16px; }
     .rodape-tabela { flex-wrap: wrap; gap: 12px; }
 }
+
+/* Em telas pequenas, a tabela genérica mantém colunas legíveis. */
+@media (max-width: 650px) {
+    .pagina-servicos .tabela-generica { overflow-x: auto; }
+    .pagina-servicos .tabela-generica table { min-width: 580px; }
+}

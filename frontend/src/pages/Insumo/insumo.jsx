@@ -18,7 +18,7 @@ import {
   mensagemDeErro
 } from "../../services/insumoService.js";
 
-import "./insumo.css";
+import "./Insumo.css";
 
 function Insumos() {
   const [insumos, setInsumos] = useState([]);
@@ -216,7 +216,7 @@ const limparPesquisa = async () => {
             onChange={setTermo}
             onPesquisar={pesquisarInsumos}
             onLimpar={limparPesquisa}
-            placeholder="Pesquisar por nome..."
+            placeholder="Pesquisar por nome ou custo unitário..."
           />
         </div>
 
@@ -266,12 +266,15 @@ const limparPesquisa = async () => {
                     {
                         nome: "nome",
                         label: "Nome do insumo",
-                        placeholder: "Nome do insumo"
+                        placeholder: "Nome do insumo",
+                        tamanhoMaximo: 30
                     },
                     {
                         nome: "custo_unitario",
                         label: "Custo unitário (R$)",
-                        placeholder: "0,00"
+                        placeholder: "0,00",
+                        modoEntrada: "decimal",
+                        tamanhoMaximo: 5
                     }
                 ]}
                 onSalvar={salvarInsumo}
