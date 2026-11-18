@@ -51,23 +51,29 @@ VALUES
 /* =========================
    SERVICO
 ========================= */
+
+/* =========================
+   SERVICO
+========================= */
 INSERT INTO Servico (
-nome,
-descricao,
-preco_base,
-fk_Categoria_id_categoria
+    nome,
+    descricao,
+    preco_base,
+    preco_mao_obra,
+    visivel,
+    fk_Categoria_id_categoria
 )
 VALUES
-('Bar de Drinks', 'Drinks alcoólicos e não alcoólicos', 15.00, 1),
-('Coffee Break Executivo', 'Coffee break para empresas', 18.00, 5),
-('Açaí Premium', 'Estação completa de açaí', 20.00, 2),
-('Sorvete Tropical', 'Ilha de sorvetes', 25.00, 2),
-('Churros Fest', 'Churros recheados', 30.00, 2),
-('Hambúrguer Artesanal', 'Mini hambúrguer gourmet', 22.00, 3),
-('Pizza Express', 'Rodízio de pizza', 28.00, 3),
-('Crepe Gourmet', 'Crepes doces e salgados', 18.00, 3),
-('Algodão Doce Kids', 'Algodão doce colorido', 10.00, 4),
-('Pipoca Gourmet', 'Pipocas especiais', 12.00, 4);
+('Bar de Drinks', 'Drinks alcoólicos e não alcoólicos', 15.00, 80.00, TRUE, 1),
+('Coffee Break Executivo', 'Coffee break para empresas', 18.00, 100.00, TRUE, 5),
+('Açaí Premium', 'Estação completa de açaí', 20.00, 60.00, TRUE, 2),
+('Sorvete Tropical', 'Ilha de sorvetes', 25.00, 65.00, TRUE, 2),
+('Churros Fest', 'Churros recheados', 30.00, 70.00, TRUE, 2),
+('Hambúrguer Artesanal', 'Mini hambúrguer gourmet', 22.00, 120.00, TRUE, 3),
+('Pizza Express', 'Rodízio de pizza', 28.00, 150.00, TRUE, 3),
+('Crepe Gourmet', 'Crepes doces e salgados', 18.00, 90.00, TRUE, 3),
+('Algodão Doce Kids', 'Algodão doce colorido', 10.00, 40.00, TRUE, 4),
+('Pipoca Gourmet', 'Pipocas especiais', 12.00, 45.00, FALSE, 4);
 
 /* =========================
    PRECO_CONVIDADO
@@ -105,7 +111,8 @@ VALUES
 ('Queijo', 5.00),
 ('Presunto', 3.00),
 ('Café', 6.00),
-('Acucar', 2.50);
+('Acucar', 2.50),
+('Pão de hamburguer', 2.58);
 
 /* =========================
    CARRINHO
@@ -158,13 +165,13 @@ fk_Cliente_id_cliente,
 fk_Cidade_id_cidade
 )
 VALUES
-('Festa de Aniversário do Lucas','2026-09-17', '18:00:00', 'Salão Imperial', 'Confirmado', 120, '23:00:00', 1, 1),
+('Festa de Aniversário do Lucas','2028-09-17', '18:00:00', 'Salão Imperial', 'Confirmado', 120, '23:00:00', 1, 1),
 ('Comemoração de Formatura','2026-10-29', '19:00:00', 'Espaço Fest', 'Confirmado', 80, '00:00:00', 2, 1),
 ('Aniversário de Laura','2026-12-21', '17:00:00', 'Chácara Verde', 'Pendente', 150, '22:00:00', 3, 3),
 ('Casamento DG','2026-09-07', '18:30:00', 'Buffet Real', 'Confirmado', 90, '23:30:00', 4, 1),
-('Coffee-break da LT Design','2026-09-11', '16:00:00', 'Área Vip', 'Cancelado', 60, '21:00:00', 5, 5),
+('Coffee-break da LT Design','2027-09-11', '16:00:00', 'Área Vip', 'Cancelado', 60, '21:00:00', 5, 5),
 ('Geruza Nails','2026-09-01', '20:00:00', 'Casa de Eventos', 'Confirmado', 200, '02:00:00', 6, 6),
-('Coffee-break Estética Automotiva','2026-05-15', '15:00:00', 'Espaço Kids', 'Pendente', 70, '20:00:00', 7, 7),
+('Coffee-break Estética Automotiva','2023-05-15', '15:00:00', 'Espaço Kids', 'Pendente', 70, '20:00:00', 7, 7),
 ('Bodas de Prata GH','2026-10-17', '19:30:00', 'Salão Ouro', 'Cancelado', 110, '00:30:00', 8, 8),
 ('Casamento Miguel','2026-11-20', '18:00:00', 'Fazenda Bela Vista', 'Cancelado', 180, '01:00:00', 9, 9),
 ('Chá revelação Maria','2026-10-15', '21:00:00', 'Clube Central', 'Confirmado', 250, '05:00:00', 10, 10);

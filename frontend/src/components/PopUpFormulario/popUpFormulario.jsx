@@ -30,6 +30,14 @@ function PopUpFormulario({
 
     const formularioServico = false; // Estilo compartilhado dos formulários.
 
+    // Entrada em formato brasileiro de 24 horas, independente do idioma do navegador.
+    function formatarHora24(valor) {
+        const digitos = String(valor).replace(/\D/g, '').slice(0, 4);
+        return digitos.length > 2
+            ? `${digitos.slice(0, 2)}:${digitos.slice(2)}`
+            : digitos;
+    }
+
     function alterarCampo(nome, valor, campo) {
         // Regra opcional, utilizada somente pelo preco_base de Serviço:
         // DECIMAL(5,2) = até 3 dígitos inteiros e 2 casas decimais.
@@ -79,6 +87,14 @@ function PopUpFormulario({
                                             <option key={opcao.valor} value={opcao.valor}>{opcao.rotulo}</option>
                                         ))}
                                     </select>
+                                ) : campo.tipo === 'hora24' ? (
+                                    <input id={identificador} type="text"
+                                        value={dados[campo.nome] ?? ''} placeholder="HH:MM (00:00–23:59)"
+                                        maxLength={5} inputMode="numeric" autoComplete="off"
+                                        pattern="(?:[01][0-9]|2[0-3]):[0-5][0-9]"
+                                        title="Informe um horário entre 00:00 e 23:59 (formato 24 horas)"
+                                        required={obrigatorio} disabled={salvando}
+                                        onChange={(evento) => alterarCampo(campo.nome, formatarHora24(evento.target.value), campo)} />
                                 ) : campo.tipo === 'texto-longo' ? (
                                     <textarea id={identificador} value={dados[campo.nome] ?? ''}
                                         placeholder={campo.placeholder} maxLength={campo.tamanhoMaximo}

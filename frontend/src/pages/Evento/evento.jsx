@@ -169,8 +169,8 @@ export default function Evento() {
     const campos = useMemo(() => [
         { nome: 'nome_evento', label: 'Nome do Evento', placeholder: 'Ex: Casamento', tamanhoMaximo: 50 },
         { nome: 'data_evento', label: 'Data do Evento', tipo: 'date' },
-        { nome: 'horario_inicio', label: 'Horário de Início', tipo: 'time' },
-        { nome: 'horario_fim', label: 'Horário de Encerramento', tipo: 'time' },
+        { nome: 'horario_inicio', label: 'Horário de Início', tipo: 'hora24' },
+        { nome: 'horario_fim', label: 'Horário de Encerramento', tipo: 'hora24' },
         { nome: 'local', label: 'Local', placeholder: 'Local do evento', tamanhoMaximo: 50 },
         { nome: 'n_convidados', label: 'Número de Convidados', tipo: 'number', modoEntrada: 'numeric' },
         { nome: 'status', label: 'Status', tipo: 'selecao', placeholder: 'Selecione o status',
