@@ -117,3 +117,4 @@
 .popup-confirmacao-acoes .botao-confirmar-exclusao:hover {
     background-color: #850000;
 }
+.popup-confirmacao-erro {color:#a52821;background:#fff2f0;border:1px solid #e9c2bb;border-radius:6px;padding:10px;font-size:12px;}

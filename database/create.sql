@@ -28,6 +28,8 @@ CREATE TABLE Servico (
     id_servico INTEGER  AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(30) NOT NULL,
     descricao VARCHAR(300),
+    preco_mao_obra DECIMAL(5,2) UNSIGNED NULL,
+    visivel BOOLEAN NOT NULL DEFAULT TRUE,
     preco_base DECIMAL(5,2) UNSIGNED NOT NULL,
     fk_Categoria_id_categoria INTEGER
 );

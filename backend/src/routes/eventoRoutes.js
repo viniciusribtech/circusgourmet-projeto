@@ -1,0 +1,12 @@
+const express = require('express');
+const controller = require('../controllers/eventoController');
+const rotas = express.Router();
+rotas.get('/eventos', controller.listar);
+rotas.get('/eventos/buscar', controller.buscar);
+rotas.get('/eventos/clientes', controller.clientes);
+rotas.get('/eventos/cidades', controller.cidades);
+rotas.get('/eventos/:id', controller.obter);
+rotas.post('/eventos', controller.cadastrar);
+rotas.put('/eventos/:id', controller.atualizar);
+rotas.delete('/eventos/:id', controller.excluir);
+module.exports = rotas;

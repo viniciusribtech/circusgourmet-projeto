@@ -1,0 +1,9 @@
+/* Reutiliza as classes compartilhadas de pesquisa, mensagens e paginação de Insumos. */
+.pagina-eventos { width: 100%; max-width: 1200px; margin: 0 auto; padding: 32px; box-sizing: border-box; }
+.cabecalho-eventos { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; gap: 16px; }
+.aviso-evento { color: #2a6541; margin-bottom: 20px; }
+@media (max-width: 650px) { .pagina-eventos { padding: 20px 12px; } .cabecalho-eventos { flex-direction: column; } .rodape-tabela { flex-wrap: wrap; gap: 12px; } }
+
+/* Eventos têm mais colunas; a mesma tabela genérica permite rolagem horizontal. */
+.pagina-eventos .tabela-generica { overflow-x: auto; }
+.pagina-eventos .tabela-generica table { min-width: 860px; }

@@ -1,3 +1,4 @@
+
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
@@ -15,32 +16,42 @@ app.use(express.json());
 // Verifica a conexão com o banco
 require('./src/database/connection');
 
-//1. Importa as rotas do dashboard que vocês criaram
+// Rotas do dashboard
 const dashboardRoutes = require('./src/routes/dashboardRoutes');
 app.use('/api', dashboardRoutes);
 
 // Rota base de teste
-app.get('/', (req, res) => { 
-    res.json({ status: "Sucesso!", mensagem: "API Circus Gourmet rodando" }); 
+app.get('/', (req, res) => {
+    res.json({
+        status: "Sucesso!",
+        mensagem: "API Circus Gourmet rodando"
+    });
 });
 
-// rota do cliente
+// Rotas de Clientes
 const clienteRoutes = require('./src/routes/clienteRoutes');
 app.use('/api', clienteRoutes);
 
-// rota do insumo
+// Rotas de Insumos
 const insumoRoutes = require('./src/routes/insumoRoutes');
 app.use('/api', insumoRoutes);
 
-// rota do carrinho
+// Rotas de Serviços
+const servicoRoutes = require('./src/routes/servicoRoutes');
+app.use('/api', servicoRoutes);
+
+// Rotas de Carrinhos
 const carrinhoRoutes = require('./src/routes/carrinhoRoutes');
 app.use('/api', carrinhoRoutes);
 
 // rota do orcamento
 const orcamentoRoutes = require('./src/routes/orcamentoRoutes');
 app.use('/api', orcamentoRoutes);
+const eventoRoutes = require('./src/routes/eventoRoutes');
+app.use('/api', eventoRoutes);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => { 
-    console.log(`Servidor rodando com sucesso na porta ${PORT}`); 
+
+app.listen(PORT, () => {
+    console.log(`Servidor rodando com sucesso na porta ${PORT}`);
 });
