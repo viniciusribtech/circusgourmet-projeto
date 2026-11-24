@@ -11,7 +11,6 @@ import {
     listarServicos, buscarServicos, listarCategoriasServico,
     cadastrarServico, obterServicoPorId, atualizarServico, excluirServico, mensagemErroServico
 } from '../../services/servicoService.js';
-import '../Insumo/insumo.css';
 import './servico.css';
 
 const SERVICOS_POR_PAGINA = 4;
