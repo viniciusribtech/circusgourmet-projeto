@@ -75,13 +75,6 @@ CREATE TABLE Preco_convidado (
     fk_Servico_id_servico INTEGER 
 );
 
-CREATE TABLE Terceirizado (
-    id_terceirizado INTEGER AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(30) NOT NULL,
-    telefone VARCHAR(15) NOT NULL,
-    trabalho_hora DECIMAL(4,2) UNSIGNED NOT NULL
-);
-
 CREATE TABLE EVENTO_CARRINHO (
     FK_Evento_id_evento INTEGER,
     FK_Carrinho_id_carrinho INTEGER,
@@ -101,13 +94,6 @@ CREATE TABLE SERVICO_INSUMO (
     FK_Servico_id_servico INTEGER ,
     quantidade_insumo SMALLINT UNSIGNED NOT NULL,
     PRIMARY KEY (FK_Servico_id_servico, FK_Insumo_id_insumo)
-);
-
-CREATE TABLE EVENTO_TERCEIRIZADO (
-    FK_Terceirizado_id_terceirizado INTEGER,
-    FK_Evento_id_evento INTEGER,
-    Custo_mao_de_obra DECIMAL(5,2) UNSIGNED NOT NULL,
-    PRIMARY KEY (FK_Terceirizado_id_terceirizado, FK_Evento_id_evento)
 );
  
 ALTER TABLE Evento ADD CONSTRAINT FK_Evento_2
