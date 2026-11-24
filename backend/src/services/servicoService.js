@@ -2,7 +2,7 @@ const pool = require('../database/connection');
 
 const CONSULTA_SERVICOS = `
     SELECT Servico.id_servico, Servico.nome, Servico.descricao,
-           Servico.preco_base, Servico.preco_mao_obra, Servico.visivel, Servico.fk_Categoria_id_categoria,
+           Servico.preco_base, Servico.visivel, Servico.fk_Categoria_id_categoria,
            Categoria.nome_categoria
     FROM Servico
     LEFT JOIN Categoria
@@ -77,21 +77,14 @@ function normalizarDadosServico(dados) {
             throw erroValidacao('A categoria selecionada é inválida.');
         }
     }
-    let precoMaoObra = null;
-    if (dados.preco_mao_obra != null && String(dados.preco_mao_obra).trim() !== '') {
-        const texto = String(dados.preco_mao_obra).trim();
-        if (!/^\d{1,3}(?:[.,]\d{1,2})?$/.test(texto) || Number(texto.replace(',', '.')) > 999.99) {
-            throw erroValidacao('Preço da mão de obra inválido (máximo R$ 999,99).');
-        }
-        precoMaoObra = Number(texto.replace(',', '.')).toFixed(2);
-    }
+
     const visivel = dados.visivel === undefined ? true :
         dados.visivel === true || dados.visivel === 1 || dados.visivel === '1';
-    return { nome, descricao, precoBase: precoBase.toFixed(2), categoriaId, precoMaoObra, visivel };
+    return { nome, descricao, precoBase: precoBase.toFixed(2), categoriaId, visivel };
 }
 
 async function cadastrarServico(dados) {
-    const { nome, descricao, precoBase, categoriaId, precoMaoObra, visivel } = normalizarDadosServico(dados);
+    const { nome, descricao, precoBase, categoriaId, visivel } = normalizarDadosServico(dados);
     const conexao = await pool.getConnection();
     try {
         await conexao.beginTransaction();
@@ -108,8 +101,8 @@ async function cadastrarServico(dados) {
             if (!categorias.length) throw erroValidacao('A categoria selecionada não existe.');
         }
         const [resultado] = await conexao.query(
-            'INSERT INTO Servico (nome, descricao, preco_base, preco_mao_obra, visivel, fk_Categoria_id_categoria) VALUES (?, ?, ?, ?, ?, ?)',
-            [nome, descricao, precoBase, precoMaoObra, visivel, categoriaId]
+            'INSERT INTO Servico (nome, descricao, preco_base, visivel, fk_Categoria_id_categoria) VALUES (?, ?, ?, ?, ?)',
+            [nome, descricao, precoBase, visivel, categoriaId]
         );
         await conexao.commit();
         return { id_servico: resultado.insertId, mensagem: 'Serviço cadastrado com sucesso!' };
@@ -128,7 +121,7 @@ async function obterServicoPorId(idServico) {
 }
 
 async function atualizarServico(idServico, dados) {
-    const { nome, descricao, precoBase, categoriaId, precoMaoObra, visivel } = normalizarDadosServico(dados);
+    const { nome, descricao, precoBase, categoriaId, visivel } = normalizarDadosServico(dados);
     const conexao = await pool.getConnection();
     try {
         await conexao.beginTransaction();
@@ -144,8 +137,8 @@ async function atualizarServico(idServico, dados) {
             if (!categorias.length) throw erroValidacao('A categoria selecionada não existe.');
         }
         await conexao.query(
-            'UPDATE Servico SET nome = ?, descricao = ?, preco_base = ?, preco_mao_obra = ?, visivel = ?, fk_Categoria_id_categoria = ? WHERE id_servico = ?',
-            [nome, descricao, precoBase, precoMaoObra, visivel, categoriaId, idServico]
+            'UPDATE Servico SET nome = ?, descricao = ?, preco_base = ?, visivel = ?, fk_Categoria_id_categoria = ? WHERE id_servico = ?',
+            [nome, descricao, precoBase, visivel, categoriaId, idServico]
         );
         await conexao.commit();
         return { mensagem: 'Serviço atualizado com sucesso!' };
