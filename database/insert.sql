@@ -140,22 +140,6 @@ VALUES
 ('Grande', 300, TRUE);
 
 /* =========================
-   TERCEIRIZADO
-========================= */
-INSERT INTO Terceirizado (nome, telefone, trabalho_hora)
-VALUES
-('Carlos Drinks', '77999991111', 45.00),
-('Pedro Garçom', '77999992222', 35.00),
-('Lucas Bartender', '77999993333', 50.00),
-('Rafael Cozinheiro', '77999994444', 55.00),
-('Thiago Eventos', '77999995555', 40.00),
-('Marcos Buffet', '77999996666', 65.00),
-('Felipe Chef', '77999997777', 75.00),
-('André Garçom', '77999998888', 35.00),
-('Diego Drinks', '77999999999', 50.00),
-('Paulo Churrasqueiro', '77999990000', 60.00);
-
-/* =========================
    EVENTO
 ========================= */
 INSERT INTO Evento (
@@ -273,21 +257,3 @@ VALUES
 (11, 9, 10), 
 (1, 10, 8),    
 (6, 10, 6);     
-
-/* =========================
-   EVENTO_TERCEIRIZADO
-========================= */
-INSERT INTO EVENTO_TERCEIRIZADO
-(FK_Terceirizado_id_terceirizado,
- FK_Evento_id_evento,
- Custo_mao_de_obra)
-VALUES
-(1,2,250.00),
-(2,2,180.00),
-(3,4,280.00),
-(4,6,350.00),
-(5,6,220.00),
-(6,6,450.00),
-(7,8,400.00),
-(8,10,200.00),
-(9,10,280.00);
