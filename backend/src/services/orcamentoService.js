@@ -121,7 +121,6 @@ async function calcularOrcamentoEvento(conexao, eventoId, descontoInformado = 0)
             ES.preco_praticado,
             S.nome AS nome_servico,
             S.preco_base,
-            S.preco_mao_obra,
             S.visivel
         FROM EVENTO_SERVICO ES
         INNER JOIN Servico S
@@ -145,7 +144,6 @@ async function calcularOrcamentoEvento(conexao, eventoId, descontoInformado = 0)
         const quantidade = Math.max(1, Number(item.quantidade || 1));
         const precoBase = Number(item.preco_base || 0);
         const precoPraticado = Number(item.preco_praticado || 0);
-        const maoDeObra = Number(item.preco_mao_obra || 0);
 
         const [[faixaConvidado]] = await conexao.query(`
             SELECT preco_por_pessoa
@@ -163,12 +161,11 @@ async function calcularOrcamentoEvento(conexao, eventoId, descontoInformado = 0)
         if (faixaConvidado) {
             const totalPorConvidados = arredondarMoeda(Number(faixaConvidado.preco_por_pessoa) * nConvidados);
             valorUnitarioItem = arredondarMoeda(Number(faixaConvidado.preco_por_pessoa));
-            subtotalItem = arredondarMoeda(totalPorConvidados + maoDeObra);
             tipoCobranca = `faixa_convidados (${nConvidados} pessoas)`;
         } else {
             valorUnitarioItem = precoPraticado > 0 ? precoPraticado : precoBase;
             tipoCobranca = precoPraticado > 0 ? 'preco_praticado' : 'preco_base';
-            subtotalItem = arredondarMoeda((valorUnitarioItem * quantidade) + maoDeObra);
+            subtotalItem = arredondarMoeda(valorUnitarioItem * quantidade)
         }
 
         subtotalServicos = arredondarMoeda(subtotalServicos + subtotalItem);
@@ -178,7 +175,6 @@ async function calcularOrcamentoEvento(conexao, eventoId, descontoInformado = 0)
             nome_servico: item.nome_servico,
             quantidade,
             valor_unitario: arredondarMoeda(valorUnitarioItem),
-            mao_de_obra: arredondarMoeda(maoDeObra),
             subtotal_item: subtotalItem,
             tipo_cobranca: tipoCobranca
         });
