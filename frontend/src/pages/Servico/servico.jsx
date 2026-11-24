@@ -110,7 +110,6 @@ export default function Servico() {
             setCategorias(dados);
             setServicoEditando({ ...registro, preco_base: String(registro.preco_base ?? '').replace('.', ','),
                 fk_Categoria_id_categoria: registro.fk_Categoria_id_categoria == null ? '' : String(registro.fk_Categoria_id_categoria),
-                preco_mao_obra: registro.preco_mao_obra == null ? '' : String(registro.preco_mao_obra).replace('.', ','),
                 visivel: Boolean(Number(registro.visivel)) });
             setPopupAberto(true);
         } catch (falha) { setErro(mensagemErroServico(falha)); }
@@ -169,12 +168,6 @@ export default function Servico() {
         setErroFormulario('');
         setSalvando(true);
         try {
-            // Mão de obra não aparece no formulário, mas seu valor existente
-            // é preservado ao editar o serviço; no cadastro novo permanece NULL.
-            const dadosParaSalvar = {
-                ...dados,
-                preco_mao_obra: servicoEditando ? servicoEditando.preco_mao_obra : null
-            };
             const resultado = servicoEditando
                 ? await atualizarServico(servicoEditando.id_servico, dadosParaSalvar)
                 : await cadastrarServico(dadosParaSalvar);
