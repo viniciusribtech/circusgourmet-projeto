@@ -22,17 +22,11 @@ const COLUNAS_SERVICOS = [
     {
         titulo: 'NOME DO SERVIÇO',
         campo: 'nome',
-        largura: '38%',
+        largura: '43%',
         render: (servico) => <span className="texto-tabela-truncado" title={servico.nome || ''}>{servico.nome}</span>
     },
-    {
-        titulo: 'PREÇO BASE',
-        campo: 'preco_base',
-        largura: '20%',
-        render: (servico) => formatadorMoeda.format(Number(servico.preco_base))
-    },
-    { titulo: 'MÃO DE OBRA', campo: 'preco_mao_obra', largura: '17%',
-        render: (servico) => servico.preco_mao_obra == null ? '—' : formatadorMoeda.format(Number(servico.preco_mao_obra)) },
+    { titulo: 'PREÇO BASE', campo: 'preco_base', largura: '17%',
+        render: (servico) => formatadorMoeda.format(Number(servico.preco_base)) },
     { titulo: 'VISÍVEL', campo: 'visivel', largura: '12%',
         render: (servico) => Boolean(Number(servico.visivel)) ? 'Sim' : 'Não' },
     {
@@ -176,9 +170,15 @@ export default function Servico() {
         setErroFormulario('');
         setSalvando(true);
         try {
+            // Mão de obra não aparece no formulário, mas seu valor existente
+            // é preservado ao editar o serviço; no cadastro novo permanece NULL.
+            const dadosParaSalvar = {
+                ...dados,
+                preco_mao_obra: servicoEditando ? servicoEditando.preco_mao_obra : null
+            };
             const resultado = servicoEditando
-                ? await atualizarServico(servicoEditando.id_servico, dados)
-                : await cadastrarServico(dados);
+                ? await atualizarServico(servicoEditando.id_servico, dadosParaSalvar)
+                : await cadastrarServico(dadosParaSalvar);
             setPopupAberto(false);
             setServicoEditando(null);
             setTermo('');
@@ -193,9 +193,8 @@ export default function Servico() {
 
     const camposCadastro = useMemo(() => [
         { nome: 'nome', label: 'Nome do Serviço', placeholder: 'Ex: Buffet de Canapés Premium', tamanhoMaximo: 30 },
-        { nome: 'preco_base', label: 'Preço Base (R$)', placeholder: '0,00', modoEntrada: 'decimal', limitarPrecoServico: true },
-        { nome: 'preco_mao_obra', label: 'Preço da Mão de Obra (R$) (Opcional)',
-            placeholder: '0,00', modoEntrada: 'decimal', limitarPrecoServico: true, obrigatorio: false },
+        { nome: 'preco_base', label: 'Preço Base (R$)',
+            placeholder: '0,00', modoEntrada: 'decimal', limitarPrecoServico: true },
         { nome: 'visivel', label: 'Serviço visível no catálogo', tipo: 'checkbox', obrigatorio: false, valorPadrao: true },
         { nome: 'fk_Categoria_id_categoria', label: 'Categoria (Opcional)', tipo: 'selecao', obrigatorio: false,
             placeholder: 'Sem categoria', opcoes: categorias.map((categoria) => ({
