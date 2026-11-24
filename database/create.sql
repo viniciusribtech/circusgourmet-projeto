@@ -37,7 +37,7 @@ CREATE TABLE Servico (
 CREATE TABLE Orcamento (
     id_orcamento INTEGER AUTO_INCREMENT PRIMARY KEY,
     valor_total DECIMAL(7,2) UNSIGNED NOT NULL,
-    desconto DECIMAL(5,2) UNSIGNED NOT NULL,
+    desconto DECIMAL(6,2) UNSIGNED NOT NULL,
     valor_final DECIMAL(7,2) UNSIGNED NOT NULL,
     sinal_pagamento DECIMAL(7,2) UNSIGNED NOT NULL,
     fk_Evento_id_evento INTEGER UNIQUE

@@ -5,7 +5,7 @@ import "./popUpFormulario.css";
 // Os novos atributos dos campos são opcionais para preservar os formulários antigos.
 function PopUpFormulario({
     aberto, titulo, subtitulo, cliente, campos = [], onSalvar, onFechar,
-    erro = "", salvando = false
+    erro = "", salvando = false, children = null
 }) {
     const [dados, setDados] = useState({});
 
@@ -159,6 +159,7 @@ function PopUpFormulario({
                         );
                     })}
                     </div>
+                    {children}
                     {formularioServico && <div className="popup-nota-servico"><span aria-hidden="true">ⓘ</span><p>Campos marcados com <strong>*</strong> são obrigatórios para cadastrar o serviço.</p></div>}
                     <div className="popup-acoes">
                         <button type="button" className="botao-cancelar" onClick={onFechar} disabled={salvando}>Cancelar</button>

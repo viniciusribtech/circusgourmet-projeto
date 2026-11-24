@@ -5,6 +5,11 @@ export async function listarEventos() { return (await api.get('/eventos')).data;
 export async function buscarEventos(pesquisa) { return (await api.get('/eventos/buscar', { params: { pesquisa } })).data; }
 export async function listarClientesEvento() { return (await api.get('/eventos/clientes')).data; }
 export async function listarCidadesEvento() { return (await api.get('/eventos/cidades')).data; }
+export async function listarServicosEvento() {
+    const dados = (await api.get('/servicos')).data;
+    if (!Array.isArray(dados)) return [];
+    return dados.filter((servico) => servico.visivel === undefined || Boolean(Number(servico.visivel)));
+}
 export async function obterEvento(id) { return (await api.get(`/eventos/${id}`)).data; }
 export async function cadastrarEvento(dados) { return (await api.post('/eventos', dados)).data; }
 export async function atualizarEvento(id, dados) { return (await api.put(`/eventos/${id}`, dados)).data; }

@@ -7,3 +7,88 @@
 /* Eventos têm mais colunas; a mesma tabela genérica permite rolagem horizontal. */
 .pagina-eventos .tabela-generica { overflow-x: auto; }
 .pagina-eventos .tabela-generica table { min-width: 860px; }
+
+/* Seleção de serviços dentro do modal de Evento */
+.evento-servicos-bloco {
+    margin-top: 14px;
+    padding: 12px;
+    border: 1px solid #ead5d1;
+    border-radius: 6px;
+    background-color: #fafafa;
+}
+.evento-servicos-titulo {
+    display: block;
+    margin-bottom: 8px;
+    color: #403532;
+    font-size: 10px;
+    font-weight: 600;
+}
+.evento-servicos-controles {
+    display: grid;
+    grid-template-columns: 1fr 72px auto;
+    gap: 8px;
+    align-items: center;
+}
+.evento-servicos-controles select,
+.evento-servicos-controles input {
+    height: 34px;
+    padding: 0 8px;
+    border: 1px solid #ead5d1;
+    border-radius: 5px;
+    background-color: #ffffff;
+    color: #403532;
+    font-size: 11px;
+    box-sizing: border-box;
+}
+.evento-servicos-adicionar {
+    height: 34px;
+    padding: 0 12px;
+    border: 1px solid #6d0000;
+    border-radius: 5px;
+    background-color: #ffffff;
+    color: #6d0000;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.evento-servicos-adicionar:hover:not(:disabled) {
+    background-color: #fff6f5;
+}
+.evento-servicos-vazio {
+    margin: 8px 0 0;
+    color: #897a76;
+    font-size: 11px;
+}
+.evento-servicos-lista {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.evento-servicos-lista li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 10px;
+    border: 1px solid #ead5d1;
+    border-radius: 5px;
+    background-color: #ffffff;
+    color: #403532;
+    font-size: 11px;
+}
+.evento-servicos-remover {
+    border: none;
+    background: transparent;
+    color: #6d0000;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+}
+@media (max-width: 540px) {
+    .evento-servicos-controles {
+        grid-template-columns: 1fr;
+    }
+}

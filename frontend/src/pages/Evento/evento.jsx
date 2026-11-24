@@ -10,7 +10,8 @@ import PopUpFormulario from '../../components/PopUpFormulario/popUpFormulario.js
 import PopUpConfirmacao from '../../components/PopUpConfirmacao/popUpConfirmacao.jsx';
 import {
     listarEventos, buscarEventos, listarClientesEvento, listarCidadesEvento,
-    obterEvento, cadastrarEvento, atualizarEvento, excluirEvento, mensagemErroEvento
+    listarServicosEvento, obterEvento, cadastrarEvento, atualizarEvento,
+    excluirEvento, mensagemErroEvento
 } from '../../services/eventoService.js';
 import '../Insumo/Insumo.css';
 import './evento.css';
@@ -58,6 +59,10 @@ export default function Evento() {
     const [abrindo, setAbrindo] = useState(false);
     const [clientes, setClientes] = useState([]);
     const [cidades, setCidades] = useState([]);
+    const [servicosDisponiveis, setServicosDisponiveis] = useState([]);
+    const [servicoSelecionado, setServicoSelecionado] = useState('');
+    const [quantidadeServico, setQuantidadeServico] = useState('1');
+    const [servicosSelecionados, setServicosSelecionados] = useState([]);
     const [eventoExcluindo, setEventoExcluindo] = useState(null);
     const [erroExclusao, setErroExclusao] = useState('');
     const [excluindo, setExcluindo] = useState(false);
@@ -94,16 +99,31 @@ export default function Evento() {
     }
     function limpar() { setTermo(''); setAviso(''); setErro(''); carregar(); }
 
-    async function abrirFormulario(evento = null) {
+    const abrirFormulario = useCallback(async (evento = null) => {
         if (abrindo) return;
         setAbrindo(true); setErroFormulario(''); setAviso('');
         try {
-            const [listaClientes, listaCidades, dados] = await Promise.all([
-                listarClientesEvento(), listarCidadesEvento(),
+            const [listaClientes, listaCidades, listaServicos, dados] = await Promise.all([
+                listarClientesEvento(), listarCidadesEvento(), listarServicosEvento(),
                 evento ? obterEvento(evento.id_evento) : Promise.resolve(null)
             ]);
-            if (!Array.isArray(listaClientes) || !Array.isArray(listaCidades)) throw new Error('Dados de seleção inválidos.');
-            setClientes(listaClientes); setCidades(listaCidades);
+            if (!Array.isArray(listaClientes) || !Array.isArray(listaCidades) || !Array.isArray(listaServicos)) {
+                throw new Error('Dados de seleção inválidos.');
+            }
+            setClientes(listaClientes);
+            setCidades(listaCidades);
+            setServicosDisponiveis(listaServicos);
+            setServicoSelecionado('');
+            setQuantidadeServico('1');
+            setServicosSelecionados(
+                Array.isArray(dados?.servicos)
+                    ? dados.servicos.map((item) => ({
+                        id_servico: Number(item.id_servico),
+                        nome: item.nome,
+                        quantidade: Number(item.quantidade || 1)
+                    }))
+                    : []
+            );
             setEventoEditando(dados ? {
                 ...dados,
                 fk_Cliente_id_cliente: dados.fk_Cliente_id_cliente == null ? '' : String(dados.fk_Cliente_id_cliente),
@@ -112,7 +132,7 @@ export default function Evento() {
             setFormAberto(true);
         } catch (falha) { setErro(mensagemErroEvento(falha)); }
         finally { setAbrindo(false); }
-    }
+    }, [abrindo]);
 
     // A Dashboard pode acessar /eventos?acao=novo para abrir o cadastro.
     useEffect(() => {
@@ -131,22 +151,81 @@ export default function Evento() {
         }, { replace: true });
 
         void abrirFormulario();
-    }, [parametros, setParametros]);
+    }, [parametros, setParametros, abrirFormulario]);
 
     function fecharFormulario() {
         if (salvando) return;
-        setFormAberto(false); setEventoEditando(null); setErroFormulario('');
+        setFormAberto(false);
+        setEventoEditando(null);
+        setServicosSelecionados([]);
+        setServicoSelecionado('');
+        setQuantidadeServico('1');
+        setErroFormulario('');
+    }
+
+    function adicionarServico() {
+        setErroFormulario('');
+        const idServico = Number(servicoSelecionado);
+        const qtd = Number(quantidadeServico);
+
+        if (!Number.isInteger(idServico) || idServico <= 0) {
+            setErroFormulario('Selecione um serviço para vincular ao evento.');
+            return;
+        }
+        if (!Number.isInteger(qtd) || qtd < 1 || qtd > 65535) {
+            setErroFormulario('Informe uma quantidade de serviço entre 1 e 65535.');
+            return;
+        }
+
+        const infoServico = servicosDisponiveis.find((s) => Number(s.id_servico) === idServico);
+        if (!infoServico) {
+            setErroFormulario('Serviço selecionado não encontrado.');
+            return;
+        }
+
+        setServicosSelecionados((anteriores) => {
+            const existente = anteriores.find((item) => Number(item.id_servico) === idServico);
+            if (existente) {
+                const novaQtd = Math.min(65535, existente.quantidade + qtd);
+                return anteriores.map((item) =>
+                    Number(item.id_servico) === idServico ? { ...item, quantidade: novaQtd } : item
+                );
+            }
+            return [
+                ...anteriores,
+                { id_servico: idServico, nome: infoServico.nome, quantidade: qtd }
+            ];
+        });
+
+        setServicoSelecionado('');
+        setQuantidadeServico('1');
+    }
+
+    function removerServico(idServico) {
+        setServicosSelecionados((anteriores) =>
+            anteriores.filter((item) => Number(item.id_servico) !== Number(idServico))
+        );
     }
 
     async function salvar(dados) {
         if (salvando) return;
         setSalvando(true); setErroFormulario('');
         try {
+            const payload = {
+                ...dados,
+                servicos: servicosSelecionados.map((item) => ({
+                    id_servico: item.id_servico,
+                    quantidade: item.quantidade
+                }))
+            };
             const resposta = eventoEditando
-                ? await atualizarEvento(eventoEditando.id_evento, dados)
-                : await cadastrarEvento(dados);
-            setFormAberto(false); setEventoEditando(null);
-            setTermo(''); setAviso(resposta.mensagem || 'Evento salvo com sucesso!');
+                ? await atualizarEvento(eventoEditando.id_evento, payload)
+                : await cadastrarEvento(payload);
+            setFormAberto(false);
+            setEventoEditando(null);
+            setServicosSelecionados([]);
+            setTermo('');
+            setAviso(resposta.mensagem || 'Evento salvo com sucesso!');
             await carregar();
         } catch (falha) { setErroFormulario(mensagemErroEvento(falha)); }
         finally { setSalvando(false); }
@@ -218,9 +297,64 @@ export default function Evento() {
                     </>}
             </main>
             <PopUpFormulario aberto={formAberto} titulo={eventoEditando ? 'Editar Evento' : 'Cadastrar Novo Evento'}
-                subtitulo={eventoEditando ? 'Atualize as informações do evento.' : 'Preencha os dados do evento.'}
+                subtitulo={eventoEditando ? 'Atualize as informações e serviços do evento.' : 'Preencha os dados e vincule os serviços do evento.'}
                 cliente={eventoEditando} campos={campos} onSalvar={salvar}
-                onFechar={fecharFormulario} erro={erroFormulario} salvando={salvando} />
+                onFechar={fecharFormulario} erro={erroFormulario} salvando={salvando}>
+                <div className="evento-servicos-bloco">
+                    <span className="evento-servicos-titulo">Serviços do Evento</span>
+                    <div className="evento-servicos-controles">
+                        <select
+                            aria-label="Selecionar serviço"
+                            value={servicoSelecionado}
+                            onChange={(e) => setServicoSelecionado(e.target.value)}
+                            disabled={salvando}
+                        >
+                            <option value="">Selecione um serviço</option>
+                            {servicosDisponiveis.map((servico) => (
+                                <option key={servico.id_servico} value={servico.id_servico}>
+                                    {servico.nome} — R$ {Number(servico.preco_base || 0).toFixed(2).replace('.', ',')}
+                                </option>
+                            ))}
+                        </select>
+                        <input
+                            type="number"
+                            min="1"
+                            max="65535"
+                            aria-label="Quantidade do serviço"
+                            value={quantidadeServico}
+                            onChange={(e) => setQuantidadeServico(e.target.value)}
+                            disabled={salvando}
+                        />
+                        <button
+                            type="button"
+                            className="evento-servicos-adicionar"
+                            onClick={adicionarServico}
+                            disabled={salvando}
+                        >
+                            Adicionar
+                        </button>
+                    </div>
+                    {servicosSelecionados.length === 0 ? (
+                        <p className="evento-servicos-vazio">Nenhum serviço vinculado a este evento.</p>
+                    ) : (
+                        <ul className="evento-servicos-lista">
+                            {servicosSelecionados.map((item) => (
+                                <li key={item.id_servico}>
+                                    <span>{item.nome} — Qtd: {item.quantidade}</span>
+                                    <button
+                                        type="button"
+                                        className="evento-servicos-remover"
+                                        onClick={() => removerServico(item.id_servico)}
+                                        disabled={salvando}
+                                    >
+                                        Remover
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            </PopUpFormulario>
             <PopUpConfirmacao aberto={Boolean(eventoExcluindo)} titulo="Confirmar Exclusão"
                 mensagem={eventoExcluindo ? `Tem certeza que deseja excluir o evento "${eventoExcluindo.nome_evento}"? Esta ação não poderá ser desfeita.` : ''}
                 erro={erroExclusao} processando={excluindo} onConfirmar={confirmarExclusao} onFechar={fecharExclusao} />

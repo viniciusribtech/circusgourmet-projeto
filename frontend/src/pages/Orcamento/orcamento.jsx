@@ -1,6 +1,4 @@
-
 import { useEffect, useState } from "react";
-import axios from "axios";
 
 import Navbar from "../../components/BarraNav/navbar.jsx";
 import CabecalhoPagina from "../../components/CabecalhoPagina/cabecalhoPagina.jsx";
@@ -10,18 +8,18 @@ import TabelaGenerica from "../../components/TabelaGenerica/tabelaGenerica.jsx";
 import Paginacao from "../../components/Paginacao/paginacao.jsx";
 import PopUpConfirmacao from "../../components/PopUpConfirmacao/popUpConfirmacao.jsx";
 
+import {
+    listarOrcamentos,
+    buscarOrcamentos,
+    listarEventosParaOrcamento,
+    calcularPreviaOrcamento,
+    cadastrarOrcamento,
+    atualizarOrcamento,
+    excluirOrcamento,
+    mensagemDeErro
+} from "../../services/orcamentoService.js";
+
 import "./orcamento.css";
-
-const api = axios.create({
-    baseURL: "http://localhost:3000/api"
-});
-
-function mensagemDeErro(erro) {
-    return (
-        erro?.response?.data?.mensagem ||
-        "Não foi possível conectar ao servidor."
-    );
-}
 
 function formatarMoeda(valor) {
     return Number(valor || 0).toLocaleString("pt-BR", {
@@ -32,18 +30,14 @@ function formatarMoeda(valor) {
 
 function formatarData(data) {
     if (!data) return "-";
-
     const dataFormatada = new Date(data);
-
     if (Number.isNaN(dataFormatada.getTime())) return "-";
-
-    return dataFormatada.toLocaleDateString("pt-BR", {
-        timeZone: "UTC"
-    });
+    return dataFormatada.toLocaleDateString("pt-BR", { timeZone: "UTC" });
 }
 
 function Orcamento() {
     const [orcamentos, setOrcamentos] = useState([]);
+    const [eventosDisponiveis, setEventosDisponiveis] = useState([]);
 
     const [termo, setTermo] = useState("");
     const [carregando, setCarregando] = useState(true);
@@ -60,37 +54,25 @@ function Orcamento() {
 
     const [dadosFormulario, setDadosFormulario] = useState({
         fk_Evento_id_evento: "",
-        valor_total: "",
         desconto: "",
         sinal_pagamento: ""
     });
 
+    const [previaCalculo, setPreviaCalculo] = useState(null);
+    const [calculandoPrevia, setCalculandoPrevia] = useState(false);
     const [erroFormulario, setErroFormulario] = useState("");
+    const [salvando, setSalvando] = useState(false);
 
-    // Calcula o valor final considerando o desconto.
-    const valorFinal =
-        Math.max(
-            0,
-            Number(dadosFormulario.valor_total || 0) -
-            Number(dadosFormulario.desconto || 0)
-        );
-
-    // O sinal precisa corresponder a pelo menos 30% do valor final.
-    const sinalMinimo = valorFinal * 0.3;
-
-    // Carrega os orçamentos
-    const carregarOrcamentos = async () => {
+    const carregarOrcamentos = async (pesquisa = "") => {
         try {
             setCarregando(true);
             setErro("");
-
-            const resposta = await api.get("/orcamentos");
-
-            setOrcamentos(resposta.data);
+            const dados = pesquisa ? await buscarOrcamentos(pesquisa) : await listarOrcamentos();
+            setOrcamentos(Array.isArray(dados) ? dados : []);
             setPaginaAtual(1);
-        } catch (erro) {
-            console.error(erro);
-            setErro(mensagemDeErro(erro));
+        } catch (err) {
+            console.error(err);
+            setErro(mensagemDeErro(err));
         } finally {
             setCarregando(false);
         }
@@ -100,189 +82,192 @@ function Orcamento() {
         carregarOrcamentos();
     }, []);
 
-    // Pesquisa localmente pelos dados do orçamento e do evento.
-    const orcamentosFiltrados = orcamentos.filter((orcamento) => {
-        const pesquisa = termo.trim().toLocaleLowerCase("pt-BR");
+    useEffect(() => {
+        if (!popupAberto) return;
 
-        if (!pesquisa) return true;
+        const eventoId = Number(dadosFormulario.fk_Evento_id_evento);
+        if (!Number.isInteger(eventoId) || eventoId <= 0) {
+            setPreviaCalculo(null);
+            return;
+        }
 
-        const campos = [
-            orcamento.id_orcamento,
-            orcamento.fk_Evento_id_evento,
-            orcamento.nome_evento,
-            orcamento.nome_cliente,
-            orcamento.local,
-            orcamento.status
-        ];
+        let cancelado = false;
+        const atualizarPrevia = async () => {
+            try {
+                setCalculandoPrevia(true);
+                setErroFormulario("");
+                const descontoNum = Number(String(dadosFormulario.desconto || "0").replace(",", "."));
+                const previa = await calcularPreviaOrcamento(
+                    eventoId,
+                    Number.isFinite(descontoNum) ? descontoNum : 0
+                );
+                if (!cancelado) {
+                    setPreviaCalculo(previa);
+                }
+            } catch (err) {
+                if (!cancelado) {
+                    setPreviaCalculo(null);
+                    setErroFormulario(mensagemDeErro(err));
+                }
+            } finally {
+                if (!cancelado) setCalculandoPrevia(false);
+            }
+        };
 
-        return campos.some((campo) =>
-            String(campo ?? "")
-                .toLocaleLowerCase("pt-BR")
-                .includes(pesquisa)
-        );
-    });
+        atualizarPrevia();
+        return () => {
+            cancelado = true;
+        };
+    }, [popupAberto, dadosFormulario.fk_Evento_id_evento, dadosFormulario.desconto]);
 
-    // Limpa a pesquisa
-    const limparPesquisa = () => {
+    const limparPesquisa = async () => {
         setTermo("");
-        setPaginaAtual(1);
         setErro("");
+        await carregarOrcamentos();
     };
 
-    // Abre o formulário para cadastrar
-    const abrirCadastro = () => {
-        setOrcamentoEditando(null);
-
-        setDadosFormulario({
-            fk_Evento_id_evento: "",
-            valor_total: "",
-            desconto: "",
-            sinal_pagamento: ""
-        });
-
-        setErroFormulario("");
-        setPopupAberto(true);
+    const abrirCadastro = async () => {
+        try {
+            const listaEventos = await listarEventosParaOrcamento();
+            setEventosDisponiveis(Array.isArray(listaEventos) ? listaEventos : []);
+            setOrcamentoEditando(null);
+            setPreviaCalculo(null);
+            setDadosFormulario({
+                fk_Evento_id_evento: "",
+                desconto: "",
+                sinal_pagamento: ""
+            });
+            setErroFormulario("");
+            setPopupAberto(true);
+        } catch (err) {
+            setErro(mensagemDeErro(err));
+        }
     };
 
-    // Abre o formulário para editar
-    const abrirEdicao = (orcamento) => {
-        setOrcamentoEditando(orcamento);
-
-        setDadosFormulario({
-            fk_Evento_id_evento: String(orcamento.fk_Evento_id_evento),
-            valor_total: String(orcamento.valor_total),
-            desconto: String(orcamento.desconto),
-            sinal_pagamento: String(orcamento.sinal_pagamento)
-        });
-
-        setErroFormulario("");
-        setPopupAberto(true);
+    const abrirEdicao = async (orcamento) => {
+        try {
+            const listaEventos = await listarEventosParaOrcamento();
+            setEventosDisponiveis(Array.isArray(listaEventos) ? listaEventos : []);
+            setOrcamentoEditando(orcamento);
+            setDadosFormulario({
+                fk_Evento_id_evento: String(orcamento.fk_Evento_id_evento),
+                desconto: String(orcamento.desconto ?? ""),
+                sinal_pagamento: String(orcamento.sinal_pagamento ?? "")
+            });
+            setErroFormulario("");
+            setPopupAberto(true);
+        } catch (err) {
+            setErro(mensagemDeErro(err));
+        }
     };
 
-    // Fecha o formulário
     const fecharPopup = () => {
+        if (salvando) return;
         setPopupAberto(false);
         setOrcamentoEditando(null);
+        setPreviaCalculo(null);
         setErroFormulario("");
     };
 
-    // Atualiza os campos do formulário
     const atualizarCampo = (evento) => {
         const { name, value } = evento.target;
-
-        setDadosFormulario((dadosAnteriores) => ({
-            ...dadosAnteriores,
+        setDadosFormulario((anteriores) => ({
+            ...anteriores,
             [name]: value
         }));
     };
 
-    // Salva um orçamento novo ou atualizado
     const salvarOrcamento = async (evento) => {
         evento.preventDefault();
+        if (salvando) return;
         setErroFormulario("");
 
         const eventoId = Number(dadosFormulario.fk_Evento_id_evento);
-        const total = Number(dadosFormulario.valor_total);
-        const desconto = Number(dadosFormulario.desconto || 0);
-        const sinal = Number(dadosFormulario.sinal_pagamento);
+        const desconto = Number(String(dadosFormulario.desconto || "0").replace(",", "."));
+        const sinal = Number(String(dadosFormulario.sinal_pagamento || "").replace(",", "."));
 
-        if (
-            !Number.isInteger(eventoId) ||
-            eventoId <= 0 ||
-            dadosFormulario.valor_total === "" ||
-            dadosFormulario.sinal_pagamento === ""
-        ) {
-            setErroFormulario("Preencha todos os campos obrigatórios.");
+        if (!Number.isInteger(eventoId) || eventoId <= 0 || dadosFormulario.sinal_pagamento === "") {
+            setErroFormulario("Selecione o evento e informe o sinal de pagamento.");
             return;
         }
 
-        if (
-            !Number.isFinite(total) ||
-            !Number.isFinite(desconto) ||
-            !Number.isFinite(sinal) ||
-            total <= 0 ||
-            desconto < 0 ||
-            desconto > total ||
-            sinal < 0
-        ) {
+        if (!Number.isFinite(desconto) || !Number.isFinite(sinal) || desconto < 0 || sinal < 0) {
             setErroFormulario("Informe valores financeiros válidos.");
             return;
         }
 
-        if (sinal < sinalMinimo) {
-            setErroFormulario(
-                `O sinal deve ser de pelo menos ${formatarMoeda(sinalMinimo)} (30% do valor final).`
-            );
-            return;
-        }
+        if (previaCalculo) {
+            const sinalMinimo = Number(previaCalculo.sinal_minimo || 0);
+            const valorFinal = Number(previaCalculo.valor_final || 0);
 
-        const dados = {
-            fk_Evento_id_evento: eventoId,
-            valor_total: total,
-            desconto,
-            valor_final: valorFinal,
-            sinal_pagamento: sinal
-        };
-
-        try {
-            if (orcamentoEditando) {
-                await api.put(
-                    `/orcamentos/${orcamentoEditando.id_orcamento}`,
-                    dados
+            if (sinal < sinalMinimo) {
+                setErroFormulario(
+                    `O sinal deve ser de pelo menos ${formatarMoeda(sinalMinimo)} (30% do valor final).`
                 );
-            } else {
-                await api.post("/orcamentos", dados);
+                return;
             }
 
-            fecharPopup();
-            await carregarOrcamentos();
-        } catch (erro) {
-            console.error(erro);
-            setErroFormulario(mensagemDeErro(erro));
+            if (sinal > valorFinal) {
+                setErroFormulario(
+                    `O sinal não pode ser maior que o valor final (${formatarMoeda(valorFinal)}).`
+                );
+                return;
+            }
+        }
+
+        try {
+            setSalvando(true);
+            const payload = {
+                fk_Evento_id_evento: eventoId,
+                desconto,
+                sinal_pagamento: sinal
+            };
+
+            if (orcamentoEditando) {
+                await atualizarOrcamento(orcamentoEditando.id_orcamento, payload);
+            } else {
+                await cadastrarOrcamento(payload);
+            }
+
+            setPopupAberto(false);
+            setOrcamentoEditando(null);
+            setPreviaCalculo(null);
+            await carregarOrcamentos(termo.trim());
+        } catch (err) {
+            console.error(err);
+            setErroFormulario(mensagemDeErro(err));
+        } finally {
+            setSalvando(false);
         }
     };
 
-    // Abre a confirmação de exclusão
     const abrirExclusao = (orcamento) => {
         setOrcamentoExcluindo(orcamento);
         setPopupExclusaoAberto(true);
     };
 
-    // Exclui o orçamento após confirmação
     const confirmarExclusao = async () => {
+        if (!orcamentoExcluindo) return;
         try {
-            await api.delete(
-                `/orcamentos/${orcamentoExcluindo.id_orcamento}`
-            );
-
+            await excluirOrcamento(orcamentoExcluindo.id_orcamento);
             setPopupExclusaoAberto(false);
             setOrcamentoExcluindo(null);
-
-            await carregarOrcamentos();
-        } catch (erro) {
-            console.error(erro);
-            alert(mensagemDeErro(erro));
+            await carregarOrcamentos(termo.trim());
+        } catch (err) {
+            console.error(err);
+            alert(mensagemDeErro(err));
         }
     };
 
-    // Paginação
-    const totalPaginas = Math.ceil(
-        orcamentosFiltrados.length / orcamentosPorPagina
-    );
-
+    const totalPaginas = Math.ceil(orcamentos.length / orcamentosPorPagina);
     const indiceInicial = (paginaAtual - 1) * orcamentosPorPagina;
-
-    const orcamentosDaPagina = orcamentosFiltrados.slice(
-        indiceInicial,
-        indiceInicial + orcamentosPorPagina
-    );
+    const orcamentosDaPagina = orcamentos.slice(indiceInicial, indiceInicial + orcamentosPorPagina);
 
     const mudarPagina = (pagina) => {
         if (pagina < 1 || pagina > totalPaginas) return;
         setPaginaAtual(pagina);
     };
 
-    // Colunas da tabela
     const colunas = [
         {
             titulo: "EVENTO / ID",
@@ -290,12 +275,8 @@ function Orcamento() {
             largura: "25%",
             render: (orcamento) => (
                 <div className="orcamento-evento">
-                    <strong>
-                        {orcamento.nome_evento || "Evento sem nome"}
-                    </strong>
-                    <span>
-                        #EVT-{String(orcamento.fk_Evento_id_evento).padStart(3, "0")}
-                    </span>
+                    <strong>{orcamento.nome_evento || "Evento sem nome"}</strong>
+                    <span>#EVT-{String(orcamento.fk_Evento_id_evento).padStart(3, "0")}</span>
                 </div>
             )
         },
@@ -330,11 +311,7 @@ function Orcamento() {
             campo: "status",
             largura: "12%",
             render: (orcamento) => (
-                <span
-                    className={`status-orcamento ${
-                        String(orcamento.status || "").toLowerCase()
-                    }`}
-                >
+                <span className={`status-orcamento ${String(orcamento.status || "").toLowerCase()}`}>
                     {orcamento.status || "Não informado"}
                 </span>
             )
@@ -346,11 +323,10 @@ function Orcamento() {
             <Navbar />
 
             <main className="pagina-orcamentos">
-
                 <div className="cabecalho-orcamentos">
                     <CabecalhoPagina
                         titulo="Consulta de Orçamentos"
-                        subtitulo="Gerencie eventos e gere orçamentos personalizados para seus clientes."
+                        subtitulo="Gerencie eventos e gere orçamentos calculados automaticamente."
                     />
 
                     <Botao onClick={abrirCadastro}>
@@ -361,24 +337,17 @@ function Orcamento() {
                 <div className="area-filtros-orcamento">
                     <CampoPesquisa
                         valor={termo}
-                        onChange={(valor) => {
-                            setTermo(valor);
-                            setPaginaAtual(1);
-                        }}
-                        onPesquisar={() => setPaginaAtual(1)}
+                        onChange={setTermo}
+                        onPesquisar={() => carregarOrcamentos(termo)}
                         onLimpar={limparPesquisa}
-                        placeholder="Nome do cliente, evento ou ID..."
+                        placeholder="Nome do cliente, evento, local ou ID..."
                     />
                 </div>
 
                 {carregando ? (
-                    <div className="mensagem-tabela">
-                        Carregando orçamentos...
-                    </div>
+                    <div className="mensagem-tabela">Carregando orçamentos...</div>
                 ) : erro ? (
-                    <div className="mensagem-tabela erro">
-                        {erro}
-                    </div>
+                    <div className="mensagem-tabela erro">{erro}</div>
                 ) : (
                     <>
                         <TabelaGenerica
@@ -392,16 +361,8 @@ function Orcamento() {
 
                         <div className="rodape-tabela">
                             <span>
-                                Exibindo{" "}
-                                {orcamentosFiltrados.length === 0
-                                    ? 0
-                                    : indiceInicial + 1}
-                                -
-                                {Math.min(
-                                    indiceInicial + orcamentosPorPagina,
-                                    orcamentosFiltrados.length
-                                )}{" "}
-                                de {orcamentosFiltrados.length} orçamentos
+                                Exibindo {orcamentos.length === 0 ? 0 : indiceInicial + 1}-
+                                {Math.min(indiceInicial + orcamentosPorPagina, orcamentos.length)} de {orcamentos.length} orçamentos
                             </span>
 
                             <Paginacao
@@ -414,73 +375,65 @@ function Orcamento() {
                 )}
             </main>
 
-            {/* Formulário próprio de orçamento */}
             {popupAberto && (
                 <div className="popup-orcamento-fundo">
-                    <form
-                        className="popup-orcamento"
-                        onSubmit={salvarOrcamento}
-                    >
+                    <form className="popup-orcamento" onSubmit={salvarOrcamento}>
                         <div className="popup-orcamento-cabecalho">
                             <h2>
-                                {orcamentoEditando
-                                    ? "Editar Orçamento"
-                                    : "Cadastro de Orçamento"}
+                                {orcamentoEditando ? "Editar Orçamento" : "Cadastro de Orçamento"}
                             </h2>
-
                             <p>
-                                Preencha os dados financeiros do evento.
+                                Os valores total e final são calculados automaticamente pelo servidor.
                             </p>
                         </div>
 
                         <div className="campo-orcamento">
-                            <label htmlFor="evento-orcamento">
-                                ID DO EVENTO *
-                            </label>
-
-                            <input
+                            <label htmlFor="evento-orcamento">EVENTO *</label>
+                            <select
                                 id="evento-orcamento"
-                                type="number"
                                 name="fk_Evento_id_evento"
-                                min="1"
                                 value={dadosFormulario.fk_Evento_id_evento}
                                 onChange={atualizarCampo}
-                                placeholder="Informe o ID do evento"
                                 required
-                            />
-
-                            <small>
-                                Informe o ID de um evento já cadastrado.
-                            </small>
+                                disabled={Boolean(orcamentoEditando)}
+                            >
+                                <option value="">Selecione um evento</option>
+                                {eventosDisponiveis.map((ev) => (
+                                    <option key={ev.id_evento} value={ev.id_evento}>
+                                        #{ev.id_evento} — {ev.nome_evento} ({formatarData(ev.data_evento)} • {ev.n_convidados} conv.)
+                                    </option>
+                                ))}
+                            </select>
                         </div>
 
-                        <div className="campo-orcamento">
-                            <label htmlFor="valor-total">
-                                VALOR TOTAL *
-                            </label>
+                        {calculandoPrevia && (
+                            <p className="resumo-calculo-info">Calculando valores do evento...</p>
+                        )}
 
-                            <div className="input-moeda">
-                                <span>R$</span>
-                                <input
-                                    id="valor-total"
-                                    type="number"
-                                    name="valor_total"
-                                    min="0.01"
-                                    step="0.01"
-                                    value={dadosFormulario.valor_total}
-                                    onChange={atualizarCampo}
-                                    placeholder="0,00"
-                                    required
-                                />
+                        {previaCalculo && (
+                            <div className="resumo-calculo-orcamento">
+                                <div>
+                                    <span>Convidados:</span>
+                                    <strong>{previaCalculo.n_convidados}</strong>
+                                </div>
+                                <div>
+                                    <span>Subtotal dos serviços:</span>
+                                    <strong>{formatarMoeda(previaCalculo.subtotal_servicos)}</strong>
+                                </div>
+                                <div>
+                                    <span>Taxa de deslocamento ({previaCalculo.nome_cidade || "Cidade"}):</span>
+                                    <strong>{formatarMoeda(previaCalculo.taxa_deslocamento)}</strong>
+                                </div>
+                                <div className="linha-destaque">
+                                    <span>Valor total calculado:</span>
+                                    <strong>{formatarMoeda(previaCalculo.valor_total)}</strong>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         <div className="campos-duplos-orcamento">
                             <div className="campo-orcamento">
-                                <label htmlFor="desconto">
-                                    DESCONTO (OPCIONAL)
-                                </label>
-
+                                <label htmlFor="desconto">DESCONTO (OPCIONAL)</label>
                                 <div className="input-moeda">
                                     <span>R$</span>
                                     <input
@@ -497,13 +450,12 @@ function Orcamento() {
                             </div>
 
                             <div className="campo-orcamento">
-                                <label>VALOR FINAL *</label>
-
+                                <label>VALOR FINAL CALCULADO</label>
                                 <div className="input-moeda campo-calculado">
                                     <span>R$</span>
                                     <input
                                         type="text"
-                                        value={valorFinal.toLocaleString("pt-BR", {
+                                        value={Number(previaCalculo?.valor_final || 0).toLocaleString("pt-BR", {
                                             minimumFractionDigits: 2,
                                             maximumFractionDigits: 2
                                         })}
@@ -514,10 +466,7 @@ function Orcamento() {
                         </div>
 
                         <div className="campo-orcamento">
-                            <label htmlFor="sinal-pagamento">
-                                SINAL DE PAGAMENTO *
-                            </label>
-
+                            <label htmlFor="sinal-pagamento">SINAL DE PAGAMENTO *</label>
                             <div className="input-moeda">
                                 <span>R$</span>
                                 <input
@@ -525,6 +474,7 @@ function Orcamento() {
                                     type="number"
                                     name="sinal_pagamento"
                                     min="0"
+                                    max={previaCalculo ? Number(previaCalculo.valor_final || 0) : undefined}
                                     step="0.01"
                                     value={dadosFormulario.sinal_pagamento}
                                     onChange={atualizarCampo}
@@ -537,18 +487,14 @@ function Orcamento() {
                         <div className="aviso-sinal">
                             <strong>ⓘ</strong>
                             <span>
-                                O sinal de pagamento deve corresponder a no
-                                mínimo 30% do valor final para reserva da data
-                                no calendário do Circus Gourmet.
+                                O sinal de pagamento deve corresponder a no mínimo 30% do valor final e não pode ultrapassar o valor final.
                                 <br />
-                                Valor mínimo: {formatarMoeda(sinalMinimo)}
+                                Valor mínimo: {formatarMoeda(previaCalculo?.sinal_minimo || 0)}
                             </span>
                         </div>
 
                         {erroFormulario && (
-                            <div className="erro-formulario-orcamento">
-                                {erroFormulario}
-                            </div>
+                            <div className="erro-formulario-orcamento">{erroFormulario}</div>
                         )}
 
                         <div className="acoes-orcamento">
@@ -556,6 +502,7 @@ function Orcamento() {
                                 type="button"
                                 className="botao-cancelar-orcamento"
                                 onClick={fecharPopup}
+                                disabled={salvando}
                             >
                                 CANCELAR
                             </button>
@@ -563,8 +510,9 @@ function Orcamento() {
                             <button
                                 type="submit"
                                 className="botao-salvar-orcamento"
+                                disabled={salvando || !previaCalculo}
                             >
-                                {orcamentoEditando ? "SALVAR" : "CADASTRAR"}
+                                {salvando ? "SALVANDO..." : orcamentoEditando ? "SALVAR" : "CADASTRAR"}
                             </button>
                         </div>
                     </form>

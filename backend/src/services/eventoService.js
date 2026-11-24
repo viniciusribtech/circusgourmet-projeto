@@ -37,7 +37,21 @@ async function listarEventos(pesquisa = '') {
 
 async function obterEvento(id) {
     const [linhas] = await pool.query(`${CAMPOS_EVENTO} WHERE Evento.id_evento = ?`, [id]);
-    return linhas[0] || null;
+    if (!linhas[0]) return null;
+
+    const [servicos] = await pool.query(`
+        SELECT ES.FK_Servico_id_servico AS id_servico,
+               ES.quantidade,
+               ES.preco_praticado,
+               Servico.nome,
+               Servico.preco_base
+        FROM EVENTO_SERVICO ES
+        INNER JOIN Servico ON Servico.id_servico = ES.FK_Servico_id_servico
+        WHERE ES.FK_Evento_id_evento = ?
+        ORDER BY Servico.nome, Servico.id_servico
+    `, [id]);
+
+    return { ...linhas[0], servicos };
 }
 
 async function listarClientes() {
@@ -56,6 +70,67 @@ function idOpcional(valor, campo) {
         throw falha(`${campo} inválido(a).`);
     }
     return Number(valor);
+}
+
+function normalizarServicos(entradaServicos) {
+    if (entradaServicos === undefined || entradaServicos === null || entradaServicos === '') {
+        return [];
+    }
+    if (!Array.isArray(entradaServicos)) {
+        throw falha('A lista de serviços do evento é inválida.');
+    }
+
+    const consolidados = new Map();
+
+    for (const item of entradaServicos) {
+        if (!item || typeof item !== 'object') {
+            throw falha('Item de serviço inválido.');
+        }
+
+        const idRaw = String(item.id_servico ?? item.FK_Servico_id_servico ?? '').trim();
+        const qtdRaw = String(item.quantidade ?? 1).trim();
+
+        if (!/^\d+$/.test(idRaw) || !Number.isSafeInteger(Number(idRaw)) || Number(idRaw) <= 0) {
+            throw falha('Serviço selecionado inválido.');
+        }
+        if (!/^\d+$/.test(qtdRaw) || Number(qtdRaw) < 1 || Number(qtdRaw) > 65535) {
+            throw falha('Informe uma quantidade de serviço entre 1 e 65535.');
+        }
+
+        const idServico = Number(idRaw);
+        const quantidade = Number(qtdRaw);
+
+        const precoRaw = item.preco_praticado;
+        let precoPraticado = null;
+        if (precoRaw !== undefined && precoRaw !== null && String(precoRaw).trim() !== '') {
+            const normalizado = Number(String(precoRaw).trim().replace(',', '.'));
+            if (!Number.isFinite(normalizado) || normalizado < 0) {
+                throw falha('Preço praticado do serviço inválido.');
+            }
+            precoPraticado = normalizado;
+        }
+
+        if (consolidados.has(idServico)) {
+            const atual = consolidados.get(idServico);
+            const somaQtd = atual.quantidade + quantidade;
+            if (somaQtd > 65535) {
+                throw falha('Quantidade total do serviço excede o limite permitido.');
+            }
+            consolidados.set(idServico, {
+                id_servico: idServico,
+                quantidade: somaQtd,
+                preco_praticado: precoPraticado !== null ? precoPraticado : atual.preco_praticado
+            });
+        } else {
+            consolidados.set(idServico, {
+                id_servico: idServico,
+                quantidade,
+                preco_praticado: precoPraticado
+            });
+        }
+    }
+
+    return Array.from(consolidados.values());
 }
 
 function validarDados(dados) {
@@ -78,10 +153,14 @@ function validarDados(dados) {
         throw falha('Informe um número de convidados entre 1 e 65535.');
     }
     if (!dados.fk_Cidade_id_cidade) throw falha('Selecione a cidade do evento (taxa de deslocamento obrigatória).');
+
+    const servicos = normalizarServicos(dados.servicos);
+
     return {
         nome, local, data, inicio, fim, status, convidados: Number(convidados),
         cliente: idOpcional(dados.fk_Cliente_id_cliente, 'Cliente'),
-        cidade: idOpcional(dados.fk_Cidade_id_cidade, 'Cidade')
+        cidade: idOpcional(dados.fk_Cidade_id_cidade, 'Cidade'),
+        servicos
     };
 }
 
@@ -93,6 +172,38 @@ async function conferirRelacionamentos(conexao, dados) {
     if (dados.cidade !== null) {
         const [[cidade]] = await conexao.query('SELECT id_cidade FROM Cidade WHERE id_cidade = ?', [dados.cidade]);
         if (!cidade) throw falha('Cidade selecionada não encontrada.');
+    }
+
+    const servicosValidados = [];
+    for (const item of dados.servicos || []) {
+        const [[servico]] = await conexao.query(
+            'SELECT id_servico, nome, preco_base, visivel FROM Servico WHERE id_servico = ?',
+            [item.id_servico]
+        );
+        if (!servico) {
+            throw falha(`Serviço selecionado (ID ${item.id_servico}) não encontrado.`);
+        }
+        if (servico.visivel !== undefined && !Boolean(Number(servico.visivel))) {
+            throw falha(`O serviço "${servico.nome}" está indisponível no momento.`);
+        }
+        servicosValidados.push({
+            id_servico: servico.id_servico,
+            quantidade: item.quantidade,
+            preco_praticado: item.preco_praticado !== null ? item.preco_praticado : Number(servico.preco_base || 0)
+        });
+    }
+
+    return servicosValidados;
+}
+
+async function salvarServicosEvento(conexao, idEvento, servicosValidados) {
+    for (const item of servicosValidados) {
+        await conexao.query(
+            `INSERT INTO EVENTO_SERVICO
+                (FK_Servico_id_servico, FK_Evento_id_evento, quantidade, preco_praticado)
+             VALUES (?, ?, ?, ?)`,
+            [item.id_servico, idEvento, item.quantidade, item.preco_praticado]
+        );
     }
 }
 
@@ -132,17 +243,19 @@ async function cadastrarEvento(entrada) {
     const conexao = await pool.getConnection();
     try {
         await conexao.beginTransaction();
-        await conferirRelacionamentos(conexao, dados);
+        const servicosValidados = await conferirRelacionamentos(conexao, dados);
         await conferirConflito(conexao, dados);
         const [resultado] = await conexao.query(`INSERT INTO Evento
             (nome_evento, data_evento, horario_inicio, horario_fim, local, status, n_convidados, fk_Cliente_id_cliente, fk_Cidade_id_cidade)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [dados.nome, dados.data, dados.inicio, dados.fim, dados.local, dados.status, dados.convidados, dados.cliente, dados.cidade]);
+        const idEvento = resultado.insertId;
+        await salvarServicosEvento(conexao, idEvento, servicosValidados);
         await conexao.commit();
-        return { id_evento: resultado.insertId, mensagem: 'Evento cadastrado com sucesso!' };
+        return { id_evento: idEvento, mensagem: 'Evento cadastrado com sucesso!' };
     } catch (erro) {
         await conexao.rollback();
-        if (erro.code === 'ER_NO_REFERENCED_ROW_2') throw falha('Cliente ou cidade não encontrado(a).');
+        if (erro.code === 'ER_NO_REFERENCED_ROW_2') throw falha('Cliente, cidade ou serviço não encontrado(a).');
         throw erro;
     } finally { conexao.release(); }
 }
@@ -154,17 +267,19 @@ async function atualizarEvento(id, entrada) {
         await conexao.beginTransaction();
         const [anteriores] = await conexao.query('SELECT id_evento FROM Evento WHERE id_evento = ? FOR UPDATE', [id]);
         if (!anteriores.length) throw falha('Evento não encontrado!', 404);
-        await conferirRelacionamentos(conexao, dados);
+        const servicosValidados = await conferirRelacionamentos(conexao, dados);
         await conferirConflito(conexao, dados, id);
         await conexao.query(`UPDATE Evento SET nome_evento = ?, data_evento = ?, horario_inicio = ?,
             horario_fim = ?, local = ?, status = ?, n_convidados = ?, fk_Cliente_id_cliente = ?,
             fk_Cidade_id_cidade = ? WHERE id_evento = ?`,
             [dados.nome, dados.data, dados.inicio, dados.fim, dados.local, dados.status, dados.convidados, dados.cliente, dados.cidade, id]);
+        await conexao.query('DELETE FROM EVENTO_SERVICO WHERE FK_Evento_id_evento = ?', [id]);
+        await salvarServicosEvento(conexao, id, servicosValidados);
         await conexao.commit();
         return { mensagem: 'Evento atualizado com sucesso!' };
     } catch (erro) {
         await conexao.rollback();
-        if (erro.code === 'ER_NO_REFERENCED_ROW_2') throw falha('Cliente ou cidade não encontrado(a).');
+        if (erro.code === 'ER_NO_REFERENCED_ROW_2') throw falha('Cliente, cidade ou serviço não encontrado(a).');
         throw erro;
     } finally { conexao.release(); }
 }
